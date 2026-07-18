@@ -44,6 +44,8 @@ document
   .addEventListener("click", function () {
     memberType = "individual";
     console.log(memberType);
+    document.getElementById("step1").style.display = "none";
+    document.getElementById("step2").style.display = "block";
   });
 document.getElementById("btn-corporate").addEventListener("click", function () {
   memberType = "corporate";
