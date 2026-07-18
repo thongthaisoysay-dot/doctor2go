@@ -48,6 +48,9 @@ document
     document.getElementById("step1").style.display = "none";
     document.getElementById("step2").style.display = "block";
     document.getElementById("input-name").value = userProfile.displayName;
+    document.getElementById("input-category").innerHTML =
+      "<option>Licensed Guide</option><option>Tour Leader</option><option>Travel Coordinator</option><option>Transportation</option><option>Hotel</option><option>Other</option>";
+    document.getElementById("step2-title").textContent = "ข้อมูลของคุณ";
   });
 document.getElementById("btn-corporate").addEventListener("click", function () {
   memberType = "corporate";
@@ -55,4 +58,7 @@ document.getElementById("btn-corporate").addEventListener("click", function () {
   document.getElementById("step1").style.display = "none";
   document.getElementById("step2").style.display = "block";
   document.getElementById("input-name").value = userProfile.displayName;
+  document.getElementById("input-category").innerHTML =
+    "<option>Tour Company</option><option>Travel Agency</option><option>DMC</option><option>Hotel</option><option>Transportation</option><option>Other</option>";
+  document.getElementById("step2-title").textContent = "ข้อมูลบริษัทของคุณ";
 });
