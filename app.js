@@ -61,4 +61,5 @@ document.getElementById("btn-corporate").addEventListener("click", function () {
   document.getElementById("input-category").innerHTML =
     "<option>Tour Company</option><option>Travel Agency</option><option>DMC</option><option>Hotel</option><option>Transportation</option><option>Other</option>";
   document.getElementById("step2-title").textContent = "ข้อมูลบริษัทของคุณ";
+  document.getElementById("input-company-name").style.display = "block";
 });
