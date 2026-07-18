@@ -30,14 +30,15 @@ async function main() {
     return;
   }
 
-  const profile = await liff.getProfile();
+  userProfile = await liff.getProfile();
   document.getElementById("status").textContent =
-    `สวัสดี ${profile.displayName}`;
+    `สวัสดี ${userProfile.displayName}`;
 }
 
 main();
 
 let memberType = null;
+let userProfile = null;
 
 document
   .getElementById("btn-individual")
@@ -46,10 +47,12 @@ document
     console.log(memberType);
     document.getElementById("step1").style.display = "none";
     document.getElementById("step2").style.display = "block";
+    document.getElementById("input-name").value = userProfile.displayName;
   });
 document.getElementById("btn-corporate").addEventListener("click", function () {
   memberType = "corporate";
   console.log(memberType);
   document.getElementById("step1").style.display = "none";
   document.getElementById("step2").style.display = "block";
+  document.getElementById("input-name").value = userProfile.displayName;
 });
