@@ -36,3 +36,16 @@ async function main() {
 }
 
 main();
+
+let memberType = null;
+
+document
+  .getElementById("btn-individual")
+  .addEventListener("click", function () {
+    memberType = "individual";
+    console.log(memberType);
+  });
+document.getElementById("btn-corporate").addEventListener("click", function () {
+  memberType = "corporate";
+  console.log(memberType);
+});
