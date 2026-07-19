@@ -6,6 +6,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
+import {
+  getFunctions,
+  httpsCallable,
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
+
 //เปรียบเหมือนบัตรประชาชนของ App
 const firebaseConfig = {
   apiKey: "AIzaSyCxgm57abKPktxBObHit1CUH80gjNtDY4s",
@@ -22,6 +27,10 @@ const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 //แปลว่า ขอ Database ของ firebaseApp นี้ ค่าที่ได้เก็บไว้ใน ----> db
 const db = getFirestore(firebaseApp);
+
+const functions = getFunctions(firebaseApp);
+
+const completeRegistration = httpsCallable(functions, "completeRegistration");
 
 //เอาไว้เก็บรหัสประจำตัวของ Liff App
 const LIFF_ID = "2010746451-zVL3e0wH";
@@ -105,6 +114,20 @@ document
       const otpCode = document.getElementById("input-otp").value;
       //หลังจากผู้ใช้งานกด ยืนยัน ดึงรหัส OTP ที่พิม (otpCode)ส่งไปเช็คกับFirebase ถ้าถูกจะได้ผู้ใช้ที่ยืนยันเบอร์แล้วเก็บไว้ใน result แต่หากผิดจะจับ catch
       const result = await confirmationResult.confirm(otpCode);
+      const formData = {
+        memberType: memberType,
+        name: document.getElementById("input-name").value,
+        category: document.getElementById("input-category").value,
+        email: document.getElementById("input-email").value,
+        companyName: document.getElementById("input-company-name").value,
+      };
+      const lineIdToken = liff.getIDToken();
+
+      const response = await completeRegistration({
+        ...formData,
+        lineIdToken: lineIdToken,
+      });
+      console.log(response.data);
     } catch (error) {
       console.log(error);
     }
