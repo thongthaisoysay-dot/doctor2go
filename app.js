@@ -1,5 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import {
+  getAuth,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 //เปรียบเหมือนบัตรประชาชนของ App
@@ -39,6 +43,7 @@ main();
 
 let memberType = null;
 let userProfile = null;
+let confirmationResult = null;
 
 document
   .getElementById("btn-individual")
@@ -63,3 +68,44 @@ document.getElementById("btn-corporate").addEventListener("click", function () {
   document.getElementById("step2-title").textContent = "ข้อมูลบริษัทของคุณ";
   document.getElementById("input-company-name").style.display = "block";
 });
+
+document
+  .getElementById("btn-step2-next")
+  .addEventListener("click", async function () {
+    try {
+      //ดึงข้อความที่ผู้ใช้พิมพ์ในช่องกรอกเบอร์โทรเช่น "0812345678" มาเก็บไว้ในตัวแปร phoneNumber
+      const phoneNumber = document.getElementById("input-phone").value;
+      //ตัดตัวอักษรแรกทิ้ง (ตัด 0 ออก) เหลือ 812345678 เอาไปต่อท้าย +66 ด้วยเครื่องหมาย +
+      const formattedPhone = "+66" + phoneNumber.slice(1);
+      //สร้างตัวจับบอทขึ้นมา1ชิ้น จากพิมพ์เขียว RecaptchaVerifierที่ firebase เตรียมไว้ให้ ต้องบอก3อย่าง "1 ใช้กับ authไหน "  "2 จะเอาไปแปะไหน"
+      const recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        { size: "invisible" },
+      );
+
+      //สั่งให้ Firebase ส่ง SMS OTP จริง ไปที่เบอร์ formattedPhone โดยผ่านการตรวจสอบของ recaptchaVerifier ก่อน (กันบอทสแปม)
+      confirmationResult = await signInWithPhoneNumber(
+        auth,
+        formattedPhone,
+        recaptchaVerifier,
+      );
+      document.getElementById("step2").style.display = "none";
+      document.getElementById("step3").style.display = "block";
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+document
+  .getElementById("btn-verify-otp")
+  .addEventListener("click", async function () {
+    try {
+      // สร้างตปotpCode ให้ข้อมูลที่พิมพ์มาเก็บไว้ใน ตปotpCode
+      const otpCode = document.getElementById("input-otp").value;
+      //หลังจากผู้ใช้งานกด ยืนยัน ดึงรหัส OTP ที่พิม (otpCode)ส่งไปเช็คกับFirebase ถ้าถูกจะได้ผู้ใช้ที่ยืนยันเบอร์แล้วเก็บไว้ใน result แต่หากผิดจะจับ catch
+      const result = await confirmationResult.confirm(otpCode);
+    } catch (error) {
+      console.log(error);
+    }
+  });
