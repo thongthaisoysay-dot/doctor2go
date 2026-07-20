@@ -127,6 +127,7 @@ document
         ...formData,
         lineIdToken: lineIdToken,
       });
+      console.log(response.data);
 
       if (response.data.success) {
         document.getElementById("step3").style.display = "none";
