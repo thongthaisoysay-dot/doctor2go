@@ -127,7 +127,16 @@ document
         ...formData,
         lineIdToken: lineIdToken,
       });
-      console.log(response.data);
+
+      document.getElementById("step3").style.display = "none";
+      document.getElementById("step4").style.display = "block";
+      document.getElementById("result-member-code").textContent =
+        "Member Code: " + response.data.memberCode;
+      document.getElementById("result-member-type").textContent =
+        "ประเภทสมาชิก: " + memberType;
+      document.getElementById("result-payment-schedule").textContent =
+        "รอบจ่ายเงิน" +
+        (memberType === "corporate" ? "Monthly Settlement" : "Within 24 Hours");
     } catch (error) {
       console.log(error);
     }

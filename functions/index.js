@@ -12,6 +12,7 @@ const { onRequest, onCall } = require("firebase-functions/https");
 const logger = require("firebase-functions/logger");
 
 const admin = require("firebase-admin");
+const { Transaction } = require("firebase-admin/firestore");
 admin.initializeApp();
 
 // For cost control, you can set the maximum number of containers that can be
@@ -35,5 +36,53 @@ exports.helloWorld = onRequest((request, response) => {
 });
 
 exports.completeRegistration = onCall(async (request) => {
-  return { success: true };
+  const lineIdToken = request.data.lineIdToken;
+  const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `id_token=${lineIdToken}&client_id=2010746451`,
+  });
+
+  const lineData = await lineResponse.json();
+
+  if (!lineResponse.ok) {
+    return { success: false, reason: "invalid_line_token", lineData: lineData };
+  }
+  const lineUserId = lineData.sub;
+  const db = admin.firestore();
+  const existingQuery = await db
+    .collection("members")
+    .where("lineUserId", "==", lineUserId)
+    .get();
+
+  if (!existingQuery.empty) {
+    return { success: false, reason: "duplicate" };
+  }
+  const counterRef = db.collection("counters").doc("memberCode");
+
+  const memberCode = await db.runTransaction(async (transaction) => {
+    const counterDoc = await transaction.get(counterRef);
+    const currentNumber = counterDoc.exists ? counterDoc.data().value : 0;
+    const nextNumber = currentNumber + 1;
+    transaction.set(counterRef, { value: nextNumber });
+    const paddedNumber = String(nextNumber).padStart(6, "0");
+    return `DG-${paddedNumber}`;
+  });
+
+  await db.collection("members").add({
+    memberCode: memberCode,
+    memberType: request.data.memberType,
+    name: request.data.name,
+    category: request.data.category,
+    email: request.data.email,
+    companyName: request.data.companyName,
+    lineUserId: lineUserId,
+    phone: request.auth.token.phone_number,
+    paymentSchedule:
+      request.data.memberType === "corporate"
+        ? "Monthly Settlement"
+        : "Within 24 Hours",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  return { success: true, memberCode: memberCode };
 });
