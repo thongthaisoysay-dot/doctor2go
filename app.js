@@ -35,6 +35,8 @@ const completeRegistration = httpsCallable(functions, "completeRegistration");
 //เอาไว้เก็บรหัสประจำตัวของ Liff App
 const LIFF_ID = "2010746451-zVL3e0wH";
 
+const DOCTOR2GO_PHONE = "0856630663";
+
 async function main() {
   await liff.init({ liffId: LIFF_ID });
 
@@ -127,7 +129,6 @@ document
         ...formData,
         lineIdToken: lineIdToken,
       });
-      console.log(response.data);
 
       if (response.data.success) {
         document.getElementById("step3").style.display = "none";
@@ -147,4 +148,15 @@ document
     } catch (error) {
       console.log(error);
     }
+  });
+
+document
+  .getElementById("btn-save-contact")
+  .addEventListener("click", async function () {
+    document.getElementById("doctor2go-phone").textContent = DOCTOR2GO_PHONE;
+    document.getElementById("doctor2go-phone").style.display = "block";
+    document.getElementById("link-call").href = "tel:" + DOCTOR2GO_PHONE;
+    document.getElementById("link-call").style.display = "block";
+    await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
+    alert("คัดลอกเบอร์ Doctor2Go แล้ว");
   });
