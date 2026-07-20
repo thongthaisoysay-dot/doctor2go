@@ -128,15 +128,21 @@ document
         lineIdToken: lineIdToken,
       });
 
-      document.getElementById("step3").style.display = "none";
-      document.getElementById("step4").style.display = "block";
-      document.getElementById("result-member-code").textContent =
-        "Member Code: " + response.data.memberCode;
-      document.getElementById("result-member-type").textContent =
-        "ประเภทสมาชิก: " + memberType;
-      document.getElementById("result-payment-schedule").textContent =
-        "รอบจ่ายเงิน" +
-        (memberType === "corporate" ? "Monthly Settlement" : "Within 24 Hours");
+      if (response.data.success) {
+        document.getElementById("step3").style.display = "none";
+        document.getElementById("step4").style.display = "block";
+        document.getElementById("result-member-code").textContent =
+          "Member Code: " + response.data.memberCode;
+        document.getElementById("result-member-type").textContent =
+          "ประเภทสมาชิก: " + memberType;
+        document.getElementById("result-payment-schedule").textContent =
+          "รอบจ่ายเงิน" +
+          (memberType === "corporate"
+            ? "Monthly Settlement"
+            : "Within 24 Hours");
+      } else {
+        alert("คุณเป็นสมาชิกแล้ว หรือเกิดความผิดพลาด");
+      }
     } catch (error) {
       console.log(error);
     }
