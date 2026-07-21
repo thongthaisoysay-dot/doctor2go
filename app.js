@@ -146,7 +146,12 @@ document
             ? "Monthly Settlement"
             : "Within 24 Hours");
       } else {
-        alert("เหตุผล: " + response.data.reason);
+        alert(
+          "เหตุผล: " +
+            response.data.reason +
+            "/" +
+            JSON.stringify(response.data.lineData),
+        );
       }
     } catch (error) {
       console.log(error);
