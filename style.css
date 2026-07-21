@@ -1,0 +1,220 @@
+:root {
+  --color-primary: #e63946;
+  --color-primary-dark: #c62836;
+  --color-primary-soft: #fdecee;
+  --color-dark: #1a1a1a;
+  --color-text-muted: #6b7280;
+  --color-bg: #f5f5f7;
+  --color-card: #ffffff;
+  --color-border: #e5e7eb;
+  --radius: 12px;
+  --radius-lg: 22px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  background: linear-gradient(180deg, #fff1f2 0%, var(--color-bg) 260px);
+  color: var(--color-dark);
+  line-height: 1.5;
+}
+
+#app {
+  width: 100%;
+  max-width: 420px;
+  height: fit-content;
+  background-color: var(--color-card);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+h1,
+h2 {
+  margin: 0 0 6px;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1.35;
+}
+
+h1 {
+  font-size: 23px;
+}
+
+/* ---------- Step 1 ---------- */
+
+#step1 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+
+#step1 h1 {
+  margin-bottom: 6px;
+}
+
+/* ---------- Buttons ---------- */
+
+#btn-individual,
+#btn-corporate,
+#btn-step2-next,
+#btn-verify-otp,
+#btn-save-contact {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: var(--radius);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+#btn-individual:hover,
+#btn-corporate:hover,
+#btn-step2-next:hover,
+#btn-verify-otp:hover,
+#btn-save-contact:hover {
+  background-color: var(--color-primary-dark);
+}
+
+#btn-individual:active,
+#btn-corporate:active,
+#btn-step2-next:active,
+#btn-verify-otp:active,
+#btn-save-contact:active {
+  transform: scale(0.98);
+}
+
+/* ---------- Form fields ---------- */
+
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+select {
+  display: block;
+  width: 100%;
+  padding: 13px 14px;
+  margin-bottom: 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-dark);
+  background-color: #ffffff;
+  transition: border-color 0.15s ease;
+}
+
+input::placeholder {
+  color: #9ca3af;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+#step2-title {
+  margin-bottom: 18px;
+}
+
+/* ---------- Step 3 (OTP) ---------- */
+
+#step3 {
+  text-align: center;
+}
+
+.otp-hint {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 0 0 18px;
+}
+
+#input-otp {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 10px;
+}
+
+#recaptcha-container {
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- Step 4 (success) ---------- */
+
+#step4 {
+  text-align: center;
+}
+
+#step4 h2 {
+  margin-bottom: 20px;
+}
+
+#result-member-code {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background-color: var(--color-primary-soft);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 0 0 10px;
+}
+
+#result-member-type,
+#result-payment-schedule {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 4px 0;
+}
+
+#btn-save-contact {
+  margin-top: 20px;
+}
+
+#doctor2go-phone {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 18px 0 4px;
+}
+
+#link-call {
+  display: inline-block;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+#link-call:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Status line ---------- */
+
+#status {
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 24px 0 0;
+}

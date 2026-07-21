@@ -15,15 +15,26 @@
       </div>
       <div id="step2" style="display: none">
         <h2 id="step2-title">กรอกเลยดิ่</h2>
-        <input type="text" id="input-company-name" style="display: none" />
-        <input type="text" id="input-name" />
-        <input type="tel" id="input-phone" />
+        <input
+          type="text"
+          id="input-company-name"
+          placeholder="ชื่อบริษัท"
+          style="display: none"
+        />
+        <input type="text" id="input-name" placeholder="ชื่อ-นามสกุล" />
+        <input type="tel" id="input-phone" placeholder="เบอร์โทรศัพท์" />
         <select id="input-category"></select>
-        <input type="email" id="input-email" />
+        <input type="email" id="input-email" placeholder="อีเมล (ไม่บังคับ)" />
         <button id="btn-step2-next">ถัดไป</button>
       </div>
       <div id="step3" style="display: none">
-        <input type="text" id="input-otp" />
+        <p class="otp-hint">เราส่งรหัส 6 หลักไปที่เบอร์ของคุณแล้ว</p>
+        <input
+          type="text"
+          id="input-otp"
+          placeholder="รหัส OTP"
+          inputmode="numeric"
+        />
         <div id="recaptcha-container"></div>
         <button id="btn-verify-otp">ยืนยัน</button>
       </div>
