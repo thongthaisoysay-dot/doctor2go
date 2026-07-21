@@ -46,8 +46,11 @@ async function main() {
   }
 
   userProfile = await liff.getProfile();
+
   document.getElementById("status").textContent =
     `สวัสดี ${userProfile.displayName}`;
+
+  document.getElementById("step1").style.display = "block";
 }
 
 main();

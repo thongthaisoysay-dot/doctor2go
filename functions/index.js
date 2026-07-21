@@ -13,6 +13,9 @@ const logger = require("firebase-functions/logger");
 
 const admin = require("firebase-admin");
 const { Transaction } = require("firebase-admin/firestore");
+const { defineSecret } = require("firebase-functions/params");
+const { Message } = require("firebase-functions/pubsub");
+const lineChannelAccessToken = defineSecret("LINE_CHANNEL_ACCESS_TOKEN");
 admin.initializeApp();
 
 // For cost control, you can set the maximum number of containers that can be
@@ -35,54 +38,78 @@ exports.helloWorld = onRequest((request, response) => {
   response.send("Hello from Firebase!");
 });
 
-exports.completeRegistration = onCall(async (request) => {
-  const lineIdToken = request.data.lineIdToken;
-  const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `id_token=${lineIdToken}&client_id=2010746451`,
-  });
+exports.completeRegistration = onCall(
+  { secrets: [lineChannelAccessToken] },
+  async (request) => {
+    const lineIdToken = request.data.lineIdToken;
+    const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `id_token=${lineIdToken}&client_id=2010746451`,
+    });
 
-  const lineData = await lineResponse.json();
+    const lineData = await lineResponse.json();
 
-  if (!lineResponse.ok) {
-    return { success: false, reason: "invalid_line_token", lineData: lineData };
-  }
-  const lineUserId = lineData.sub;
-  const db = admin.firestore();
-  const existingQuery = await db
-    .collection("members")
-    .where("lineUserId", "==", lineUserId)
-    .get();
+    if (!lineResponse.ok) {
+      return {
+        success: false,
+        reason: "invalid_line_token",
+        lineData: lineData,
+      };
+    }
+    const lineUserId = lineData.sub;
+    const db = admin.firestore();
+    const existingQuery = await db
+      .collection("members")
+      .where("lineUserId", "==", lineUserId)
+      .get();
 
-  if (!existingQuery.empty) {
-    return { success: false, reason: "duplicate" };
-  }
-  const counterRef = db.collection("counters").doc("memberCode");
+    if (!existingQuery.empty) {
+      return { success: false, reason: "duplicate" };
+    }
+    const counterRef = db.collection("counters").doc("memberCode");
 
-  const memberCode = await db.runTransaction(async (transaction) => {
-    const counterDoc = await transaction.get(counterRef);
-    const currentNumber = counterDoc.exists ? counterDoc.data().value : 0;
-    const nextNumber = currentNumber + 1;
-    transaction.set(counterRef, { value: nextNumber });
-    const paddedNumber = String(nextNumber).padStart(6, "0");
-    return `DG-${paddedNumber}`;
-  });
+    const memberCode = await db.runTransaction(async (transaction) => {
+      const counterDoc = await transaction.get(counterRef);
+      const currentNumber = counterDoc.exists ? counterDoc.data().value : 0;
+      const nextNumber = currentNumber + 1;
+      transaction.set(counterRef, { value: nextNumber });
+      const paddedNumber = String(nextNumber).padStart(6, "0");
+      return `DG-${paddedNumber}`;
+    });
 
-  await db.collection("members").add({
-    memberCode: memberCode,
-    memberType: request.data.memberType,
-    name: request.data.name,
-    category: request.data.category,
-    email: request.data.email,
-    companyName: request.data.companyName,
-    lineUserId: lineUserId,
-    phone: request.auth.token.phone_number,
-    paymentSchedule:
-      request.data.memberType === "corporate"
-        ? "Monthly Settlement"
-        : "Within 24 Hours",
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  return { success: true, memberCode: memberCode };
-});
+    await db.collection("members").add({
+      memberCode: memberCode,
+      memberType: request.data.memberType,
+      name: request.data.name,
+      category: request.data.category,
+      email: request.data.email,
+      companyName: request.data.companyName,
+      lineUserId: lineUserId,
+      phone: request.auth.token.phone_number,
+      paymentSchedule:
+        request.data.memberType === "corporate"
+          ? "Monthly Settlement"
+          : "Within 24 Hours",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    await fetch("https://api.line.me/v2/bot/message/push", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${lineChannelAccessToken.value()}`,
+      },
+      body: JSON.stringify({
+        to: lineUserId,
+        messages: [
+          {
+            type: "text",
+            text: `ยินดีต้อนรับสู่ Doctor2Go Travel Network\nการสมัครของคุณเสร็จเรียบร้อยแล้ว\n\nMember Code:${memberCode}\n\nเมื่อนักท่องเที่ยวของคุณต้องการแพทย์ โทรหาเราได้ตลอด 24 ชั่วโมง`,
+          },
+        ],
+      }),
+    });
+    return { success: true, memberCode: memberCode };
+  },
+);
