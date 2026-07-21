@@ -40,6 +40,15 @@ body {
     0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+.logo {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  margin: 0 auto 12px;
+  object-fit: contain;
+}
+
 h1,
 h2 {
   margin: 0 0 6px;
