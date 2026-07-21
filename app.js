@@ -50,7 +50,7 @@ async function main() {
   document.getElementById("status").textContent =
     `สวัสดี ${userProfile.displayName}`;
 
-  document.getElementById("step1").style.display = "block";
+  document.getElementById("step1").style.display = "flex";
 }
 
 main();
