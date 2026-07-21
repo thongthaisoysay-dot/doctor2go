@@ -146,7 +146,7 @@ document
             ? "Monthly Settlement"
             : "Within 24 Hours");
       } else {
-        alert("คุณเป็นสมาชิกแล้ว หรือเกิดความผิดพลาด");
+        alert("เหตุผล: " + response.data.reason);
       }
     } catch (error) {
       console.log(error);
