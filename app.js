@@ -55,10 +55,38 @@ async function main() {
   });
   console.log(profileResponse);
 
-  document.getElementById("status").textContent =
-    `สวัสดี ${userProfile.displayName}`;
+  //อ่านว่า "เอา profileResponse → เปิดกล่อง .data → เปิดกล่อง .success ข้างใน → เอาค่า true/false นั้นมาเช็ค"
+  if (profileResponse.data.success) {
+    document.getElementById("step-myprofile").style.display = "flex";
 
-  document.getElementById("step1").style.display = "flex";
+    document.getElementById("profile-name").textContent =
+      profileResponse.data.profile.name;
+    document.getElementById("profile-category").textContent =
+      profileResponse.data.profile.category;
+    document.getElementById("profile-companyname").textContent =
+      profileResponse.data.profile.companyName;
+    document.getElementById("profile-email").textContent =
+      profileResponse.data.profile.email;
+    document.getElementById("profile-line-user-id").textContent =
+      profileResponse.data.profile.lineUserId;
+    document.getElementById("profile-member-code").textContent =
+      profileResponse.data.profile.memberCode;
+    document.getElementById("profile-member-type").textContent =
+      profileResponse.data.profile.memberType;
+    document.getElementById("profile-Phone-user-number").textContent =
+      profileResponse.data.profile.phone;
+    document.getElementById("profile-payment-Schedule").textContent =
+      profileResponse.data.profile.paymentSchedule;
+    const createdAtDate = new Date(
+      profileResponse.data.profile.createdAt._seconds * 1000,
+    );
+    document.getElementById("profile-createdAt").textContent =
+      createdAtDate.toLocaleDateString("th-TH");
+  } else {
+    document.getElementById("status").textContent =
+      `สวัสดี ${userProfile.displayName}`;
+    document.getElementById("step1").style.display = "flex";
+  }
 }
 
 main();
