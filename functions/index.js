@@ -113,3 +113,42 @@ exports.completeRegistration = onCall(
     return { success: true, memberCode: memberCode };
   },
 );
+exports.getMyProfile = onCall(
+  { secrets: [lineChannelAccessToken] },
+  async (request) => {
+    const lineIdToken = request.data.lineIdToken;
+
+    const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `id_token=${lineIdToken}&client_id=2010746451`,
+    });
+
+    const lineData = await lineResponse.json();
+
+    if (!lineResponse.ok)
+      return {
+        success: false,
+        reason: "invalid_line_token",
+      };
+
+    const lineUserId = lineData.sub;
+    const db = admin.firestore();
+    const memberQuery = await db
+      .collection("members")
+      .where("lineUserId", "==", lineUserId)
+      .get();
+    if (memberQuery.empty) {
+      return {
+        success: false,
+        reason: "member_not_found",
+      };
+    }
+    const memberDoc = memberQuery.docs[0];
+    const memberData = memberDoc.data();
+    return {
+      success: true,
+      profile: memberData,
+    };
+  },
+);

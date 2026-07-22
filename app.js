@@ -37,6 +37,8 @@ const LIFF_ID = "2010746451-zVL3e0wH";
 
 const DOCTOR2GO_PHONE = "0856630663";
 
+const getMyProfile = httpsCallable(functions, "getMyProfile");
+
 async function main() {
   await liff.init({ liffId: LIFF_ID });
 
@@ -46,6 +48,12 @@ async function main() {
   }
 
   userProfile = await liff.getProfile();
+
+  const lineIdToken = liff.getIDToken();
+  const profileResponse = await getMyProfile({
+    lineIdToken: lineIdToken,
+  });
+  console.log(profileResponse);
 
   document.getElementById("status").textContent =
     `สวัสดี ${userProfile.displayName}`;
