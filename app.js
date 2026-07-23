@@ -10,6 +10,7 @@ import {
   getFunctions,
   httpsCallable,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
+import { addAbortListener } from "node:events";
 
 //เปรียบเหมือนบัตรประชาชนของ App
 const firebaseConfig = {
@@ -95,6 +96,7 @@ main();
 let memberType = null;
 let userProfile = null;
 let confirmationResult = null;
+let corporateMode = null;
 
 document
   .getElementById("btn-individual")
@@ -112,13 +114,31 @@ document.getElementById("btn-corporate").addEventListener("click", function () {
   memberType = "corporate";
   console.log(memberType);
   document.getElementById("step1").style.display = "none";
-  document.getElementById("step2").style.display = "block";
-  document.getElementById("input-name").value = userProfile.displayName;
-  document.getElementById("input-category").innerHTML =
-    "<option>Tour Company</option><option>Travel Agency</option><option>DMC</option><option>Hotel</option><option>Transportation</option><option>Other</option>";
-  document.getElementById("step2-title").textContent = "ข้อมูลบริษัทของคุณ";
-  document.getElementById("input-company-name").style.display = "block";
+  document.getElementById("step1b").style.display = "block";
 });
+
+document
+  .getElementById("btn-create-company")
+  .addEventListener("click", function () {
+    corporateMode = "create";
+    document.getElementById("step1b").style.display = "none";
+    document.getElementById("step2").style.display = "block";
+    document.getElementById("input-name").value = userProfile.displayName;
+    document.getElementById("input-company-name").style.display = "block";
+    document.getElementById("input-category").innerHTML =
+      "<option>Tour Company</option><option>Travel Agency</option><option>DMC</option><option>Hotel</option><option>Transportation</option><option>Other</option>";
+  });
+document
+  .getElementById("btn-join-company")
+  .addEventListener("click", function () {
+    corporateMode = "join";
+    document.getElementById("step1b").style.display = "none";
+    document.getElementById("step2").style.display = "block";
+    document.getElementById("input-name").value = userProfile.displayName;
+    document.getElementById("input-category").style.display = "none";
+
+    document.getElementById("input-company-code").style.display = "block";
+  });
 
 document
   .getElementById("btn-step2-next")
@@ -157,11 +177,15 @@ document
       //หลังจากผู้ใช้งานกด ยืนยัน ดึงรหัส OTP ที่พิม (otpCode)ส่งไปเช็คกับFirebase ถ้าถูกจะได้ผู้ใช้ที่ยืนยันเบอร์แล้วเก็บไว้ใน result แต่หากผิดจะจับ catch
       const result = await confirmationResult.confirm(otpCode);
       const formData = {
+        //มาจากตัวแปร JS ที่มีอยู่แล้ว เช่น memberType: memberType, — เอาค่าตัวแปรที่ประกาศไว้ข้างบนมาใส่ตรงๆ
         memberType: memberType,
+        //มาจากค่าที่ผู้ใช้พิมพ์ในกล่อง input เช่น companyName: document.getElementById("input-company-name").value, — ไปหยิบค่าจาก element ที่มี id นั้นๆ
         name: document.getElementById("input-name").value,
         category: document.getElementById("input-category").value,
         email: document.getElementById("input-email").value,
         companyName: document.getElementById("input-company-name").value,
+        corporateMode: corporateMode,
+        companyCode: document.getElementById("input-company-code").value,
       };
       const lineIdToken = liff.getIDToken();
 
