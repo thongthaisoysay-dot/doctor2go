@@ -58,7 +58,8 @@ async function main() {
   //อ่านว่า "เอา profileResponse → เปิดกล่อง .data → เปิดกล่อง .success ข้างใน → เอาค่า true/false นั้นมาเช็ค"
   if (profileResponse.data.success) {
     document.getElementById("step-myprofile").style.display = "flex";
-
+    document.getElementById("status").textContent =
+      `สวัสดี ${userProfile.displayName}`;
     document.getElementById("profile-name").textContent =
       profileResponse.data.profile.name;
     document.getElementById("profile-category").textContent =
