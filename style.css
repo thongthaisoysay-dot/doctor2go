@@ -57,7 +57,7 @@ body {
 
 .car {
   position: absolute;
-  bottom: 2px;
+  top: 130px;
   left: -60px;
   width: 50px;
   height: auto;
