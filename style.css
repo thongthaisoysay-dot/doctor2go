@@ -219,6 +219,91 @@ select:focus {
   text-decoration: underline;
 }
 
+/* ---------- My Profile ---------- */
+
+#step-myprofile {
+  display: flex;
+  flex-direction: column;
+}
+
+#step-myprofile h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#step-myprofile p {
+  margin: 0;
+  padding: 10px 2px;
+  font-size: 14px;
+  color: var(--color-dark);
+  border-bottom: 1px solid var(--color-border);
+}
+
+#step-myprofile p:last-child {
+  border-bottom: none;
+}
+
+#step-myprofile p::before {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+#profile-name::before {
+  content: "ชื่อ";
+}
+#profile-member-code::before {
+  content: "รหัสสมาชิก";
+}
+#profile-member-type::before {
+  content: "ประเภทสมาชิก";
+}
+#profile-category::before {
+  content: "ประเภทกิจการ";
+}
+#profile-companyname::before {
+  content: "ชื่อบริษัท";
+}
+#profile-Phone-user-number::before {
+  content: "เบอร์โทร";
+}
+#profile-email::before {
+  content: "อีเมล";
+}
+#profile-payment-Schedule::before {
+  content: "รอบชำระเงิน";
+}
+#profile-createdAt::before {
+  content: "วันที่สมัคร";
+}
+#profile-line-user-id::before {
+  content: "LINE User ID";
+}
+
+#profile-member-code {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background-color: var(--color-primary-soft);
+  border-radius: var(--radius);
+  border-bottom: none;
+  padding: 14px;
+  margin-bottom: 8px;
+}
+
+#profile-member-code::before {
+  color: var(--color-primary);
+  opacity: 0.7;
+}
+
+#profile-line-user-id {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+
 /* ---------- Status line ---------- */
 
 #status {
