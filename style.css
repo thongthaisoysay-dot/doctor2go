@@ -40,13 +40,35 @@ body {
     0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+.logo-scene {
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto 12px;
+}
+
 .logo {
   display: block;
   width: 100%;
   max-width: 220px;
   height: auto;
-  margin: 0 auto 12px;
+  margin: 0 auto;
   object-fit: contain;
+}
+
+.car {
+  position: absolute;
+  bottom: 2px;
+  left: -60px;
+  width: 50px;
+  height: auto;
+  animation: drive-across 5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes drive-across {
+  to {
+    left: calc(100% + 20px);
+  }
 }
 
 h1,
