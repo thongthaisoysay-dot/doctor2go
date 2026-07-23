@@ -10,7 +10,6 @@ import {
   getFunctions,
   httpsCallable,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
-import { addAbortListener } from "node:events";
 
 //เปรียบเหมือนบัตรประชาชนของ App
 const firebaseConfig = {
