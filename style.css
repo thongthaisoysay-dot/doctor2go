@@ -97,10 +97,25 @@ h1 {
   margin-bottom: 6px;
 }
 
+/* ---------- Step 1b (company create/join choice) ---------- */
+
+#step1b {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+
+#step1b h1 {
+  margin-bottom: 6px;
+}
+
 /* ---------- Buttons ---------- */
 
 #btn-individual,
 #btn-corporate,
+#btn-create-company,
+#btn-join-company,
 #btn-step2-next,
 #btn-verify-otp,
 #btn-save-contact {
@@ -121,6 +136,8 @@ h1 {
 
 #btn-individual:hover,
 #btn-corporate:hover,
+#btn-create-company:hover,
+#btn-join-company:hover,
 #btn-step2-next:hover,
 #btn-verify-otp:hover,
 #btn-save-contact:hover {
@@ -129,6 +146,8 @@ h1 {
 
 #btn-individual:active,
 #btn-corporate:active,
+#btn-create-company:active,
+#btn-join-company:active,
 #btn-step2-next:active,
 #btn-verify-otp:active,
 #btn-save-contact:active {
@@ -220,6 +239,13 @@ select:focus {
   margin: 4px 0;
 }
 
+#result-company-code {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 10px 0 4px;
+}
+
 #btn-save-contact {
   margin-top: 20px;
 }
@@ -303,6 +329,12 @@ select:focus {
 }
 #profile-line-user-id::before {
   content: "LINE User ID";
+}
+#profile-role::before {
+  content: "ตำแหน่ง";
+}
+#profile-company-code::before {
+  content: "รหัสบริษัท";
 }
 
 #profile-member-code {
