@@ -40,6 +40,7 @@ const DOCTOR2GO_PHONE = "0856630663";
 const getMyProfile = httpsCallable(functions, "getMyProfile");
 const createInvite = httpsCallable(functions, "createInvite");
 const claimInvite = httpsCallable(functions, "claimInvite");
+const searchCompanies = httpsCallable(functions, "searchCompanies");
 
 const roleLabels = {
   admin: "Account Owner",
@@ -249,6 +250,10 @@ document
               ? "Monthly Settlement"
               : "Within 24 Hours");
         }
+      } else if (response.data.reason === "company_already_exists") {
+        alert(
+          "This company is already registered. Please ask your company's admin to send you an invite link instead of creating a new account.",
+        );
       } else {
         alert(
           "Reason: " +
@@ -271,6 +276,63 @@ document
     document.getElementById("link-call").style.display = "block";
     await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
     alert("Doctor2Go number copied");
+  });
+
+let companySearchTimeout = null;
+
+document
+  .getElementById("input-company-name")
+  .addEventListener("input", function () {
+    clearTimeout(companySearchTimeout);
+
+    const query = this.value;
+    const suggestionsBox = document.getElementById("company-suggestions");
+
+    if (query.trim().length === 0) {
+      suggestionsBox.style.display = "none";
+      suggestionsBox.innerHTML = "";
+      return;
+    }
+
+    companySearchTimeout = setTimeout(async () => {
+      const lineIdToken = liff.getIDToken();
+      const response = await searchCompanies({
+        query: query,
+        lineIdToken: lineIdToken,
+      });
+
+      suggestionsBox.innerHTML = "";
+
+      if (response.data.success && response.data.companyNames.length > 0) {
+        response.data.companyNames.forEach((name) => {
+          const item = document.createElement("div");
+          item.className = "suggestion-item";
+          item.textContent = name;
+          suggestionsBox.appendChild(item);
+        });
+        suggestionsBox.style.display = "block";
+      } else {
+        suggestionsBox.style.display = "none";
+      }
+    }, 300);
+  });
+
+document
+  .getElementById("company-suggestions")
+  .addEventListener("mousedown", function (event) {
+    if (!event.target.classList.contains("suggestion-item")) return;
+    document.getElementById("input-company-name").value =
+      event.target.textContent;
+    this.style.display = "none";
+    this.innerHTML = "";
+  });
+
+document
+  .getElementById("input-company-name")
+  .addEventListener("blur", function () {
+    setTimeout(() => {
+      document.getElementById("company-suggestions").style.display = "none";
+    }, 150);
   });
 
 document

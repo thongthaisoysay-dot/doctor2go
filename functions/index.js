@@ -68,6 +68,26 @@ exports.completeRegistration = onCall(
     }
 
     const memberType = request.data.memberType;
+
+    if (memberType === "corporate") {
+      const companyNameInput = (request.data.companyName || "")
+        .trim()
+        .toLowerCase();
+      const companiesSnapshot = await db
+        .collection("companies")
+        .select("companyName")
+        .get();
+      const nameAlreadyExists = companiesSnapshot.docs.some(
+        (doc) =>
+          (doc.data().companyName || "").trim().toLowerCase() ===
+          companyNameInput,
+      );
+
+      if (nameAlreadyExists) {
+        return { success: false, reason: "company_already_exists" };
+      }
+    }
+
     const memberCounterRef = db.collection("counters").doc("memberCode");
 
     const { memberCode } = await db.runTransaction(async (transaction) => {
@@ -241,6 +261,44 @@ exports.createInvite = onCall(async (request) => {
   });
 
   return { success: true, inviteToken: newInviteRef.id };
+});
+
+exports.searchCompanies = onCall(async (request) => {
+  const lineIdToken = request.data.lineIdToken;
+  const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `id_token=${lineIdToken}&client_id=2010746451`,
+  });
+
+  if (!lineResponse.ok) {
+    return { success: false, reason: "invalid_line_token" };
+  }
+
+  const searchText = (request.data.query || "").trim().toLowerCase();
+  if (searchText.length === 0) {
+    return { success: true, companyNames: [] };
+  }
+
+  const db = admin.firestore();
+  const snapshot = await db
+    .collection("companies")
+    .select("companyName")
+    .get();
+
+  const matches = snapshot.docs
+    .map((doc) => doc.data().companyName)
+    .filter((name) => name && name.toLowerCase().includes(searchText));
+
+  matches.sort((a, b) => {
+    const aStartsWith = a.toLowerCase().startsWith(searchText);
+    const bStartsWith = b.toLowerCase().startsWith(searchText);
+    if (aStartsWith && !bStartsWith) return -1;
+    if (!aStartsWith && bStartsWith) return 1;
+    return a.localeCompare(b);
+  });
+
+  return { success: true, companyNames: matches.slice(0, 8) };
 });
 
 exports.claimInvite = onCall(

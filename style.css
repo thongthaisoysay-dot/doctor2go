@@ -206,6 +206,43 @@ select:focus {
   margin-bottom: 18px;
 }
 
+/* ---------- Company name autocomplete ---------- */
+
+.company-name-wrap {
+  position: relative;
+}
+
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin-top: -10px;
+  background-color: var(--color-card);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.suggestion-item {
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.suggestion-item + .suggestion-item {
+  border-top: 1px solid var(--color-border);
+}
+
+.suggestion-item:hover {
+  background-color: var(--color-primary-soft);
+}
+
 /* ---------- Step 3 (OTP) ---------- */
 
 #step3 {
