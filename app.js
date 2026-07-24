@@ -124,7 +124,7 @@ document.getElementById("btn-corporate").addEventListener("click", function () {
   memberType = "corporate";
   console.log(memberType);
   document.getElementById("step1").style.display = "none";
-  document.getElementById("step1b").style.display = "block";
+  document.getElementById("step1b").style.display = "flex";
 });
 
 document
