@@ -74,6 +74,17 @@ async function main() {
       profileResponse.data.profile.memberCode;
     document.getElementById("profile-member-type").textContent =
       profileResponse.data.profile.memberType;
+
+    if (profileResponse.data.profile.memberType === "individual") {
+      document.getElementById("profile-role").style.display = "none";
+      document.getElementById("profile-company-code").style.display = "none";
+    }
+
+    document.getElementById("profile-role").textContent =
+      profileResponse.data.profile.role;
+    document.getElementById("profile-company-code").textContent =
+      profileResponse.data.profile.companyCode;
+
     document.getElementById("profile-Phone-user-number").textContent =
       profileResponse.data.profile.phone;
     document.getElementById("profile-payment-Schedule").textContent =
@@ -205,6 +216,12 @@ document
           (memberType === "corporate"
             ? "Monthly Settlement"
             : "Within 24 Hours");
+        //ถ้า response.data.companyCode มีค่าอยู่จริง ให้ทำโค้ดข้างใน
+        if (response.data.companyCode) {
+          //ไปหาช่อง element "result-company-code" --> แล้วเตรียมจะใส่ข้อความ ก็คือ "รหัสบริษัทของคุณ:" + response.data.companyCode
+          document.getElementById("result-company-code").textContent =
+            "รหัสบริษัทของคุณ:" + response.data.companyCode;
+        }
       } else {
         alert(
           "เหตุผล: " +

@@ -57,6 +57,7 @@ exports.completeRegistration = onCall(
         lineData: lineData,
       };
     }
+
     const lineUserId = lineData.sub;
     const db = admin.firestore();
     const existingQuery = await db
@@ -67,32 +68,83 @@ exports.completeRegistration = onCall(
     if (!existingQuery.empty) {
       return { success: false, reason: "duplicate" };
     }
-    const counterRef = db.collection("counters").doc("memberCode");
 
-    const memberCode = await db.runTransaction(async (transaction) => {
-      const counterDoc = await transaction.get(counterRef);
-      const currentNumber = counterDoc.exists ? counterDoc.data().value : 0;
-      const nextNumber = currentNumber + 1;
-      transaction.set(counterRef, { value: nextNumber });
-      const paddedNumber = String(nextNumber).padStart(6, "0");
-      return `DG-${paddedNumber}`;
-    });
+    const memberType = request.data.memberType;
+    const corporateMode = request.data.corporateMode;
 
-    await db.collection("members").add({
-      memberCode: memberCode,
-      memberType: request.data.memberType,
-      name: request.data.name,
-      category: request.data.category,
-      email: request.data.email,
-      companyName: request.data.companyName,
-      lineUserId: lineUserId,
-      phone: request.auth.token.phone_number,
-      paymentSchedule:
-        request.data.memberType === "corporate"
-          ? "Monthly Settlement"
-          : "Within 24 Hours",
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    let foundCompanyDoc = null;
+    if (memberType === "corporate" && corporateMode === "join") {
+      const companyQuery = await db
+        .collection("companies")
+        .where("companyCode", "==", request.data.companyCode)
+        .get();
+
+      if (companyQuery.empty) {
+        return { success: false, reason: "company_not_found" };
+      }
+      foundCompanyDoc = companyQuery.docs[0];
+    }
+
+    const memberCounterRef = db.collection("counters").doc("memberCode");
+    const companyCounterRef = db.collection("counters").doc("companyCode");
+
+    const { memberCode, companyCode } = await db.runTransaction(
+      async (transaction) => {
+        const memberCounterDoc = await transaction.get(memberCounterRef);
+        const nextMemberNumber =
+          (memberCounterDoc.exists ? memberCounterDoc.data().value : 0) + 1;
+        const memberCode = `DG-${String(nextMemberNumber).padStart(6, "0")}`;
+
+        let companyId = null;
+        let companyCode = null;
+
+        if (memberType === "corporate" && corporateMode === "create") {
+          const companyCounterDoc = await transaction.get(companyCounterRef);
+          const nextCompanyNumber =
+            (companyCounterDoc.exists ? companyCounterDoc.data().value : 0) + 1;
+          companyCode = `DGC-${String(nextCompanyNumber).padStart(6, "0")}`;
+
+          const newCompanyRef = db.collection("companies").doc();
+          companyId = newCompanyRef.id;
+
+          transaction.set(newCompanyRef, {
+            companyName: request.data.companyName,
+            category: request.data.category,
+            companyCode: companyCode,
+            createdByLineUserId: lineUserId,
+            paymentSchedule: "Monthly Settlement",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          transaction.set(companyCounterRef, { value: nextCompanyNumber });
+        } else if (memberType === "corporate" && corporateMode === "join") {
+          companyId = foundCompanyDoc.id;
+          companyCode = foundCompanyDoc.data().companyCode;
+        }
+
+        transaction.set(memberCounterRef, { value: nextMemberNumber });
+
+        const newMemberRef = db.collection("members").doc();
+        transaction.set(newMemberRef, {
+          memberCode: memberCode,
+          memberType: memberType,
+          companyId: companyId,
+          role:
+            memberType === "corporate"
+              ? corporateMode === "create"
+                ? "admin"
+                : "employee"
+              : null,
+          name: request.data.name,
+          category: memberType === "individual" ? request.data.category : null,
+          email: request.data.email,
+          lineUserId: lineUserId,
+          phone: request.auth.token.phone_number,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        return { memberCode, companyCode };
+      },
+    );
 
     await fetch("https://api.line.me/v2/bot/message/push", {
       method: "POST",
@@ -105,14 +157,18 @@ exports.completeRegistration = onCall(
         messages: [
           {
             type: "text",
-            text: `ยินดีต้อนรับสู่ Doctor2Go Travel Network\nการสมัครของคุณเสร็จเรียบร้อยแล้ว\n\nMember Code:${memberCode}\n\nเมื่อนักท่องเที่ยวของคุณต้องการแพทย์ โทรหาเราได้ตลอด 24 ชั่วโมง`,
+            text:
+              memberType === "corporate" && corporateMode === "create"
+                ? `ยินดีต้อนรับสู่ Doctor2Go Travel Network\nสร้างบริษัทและสมัครสมาชิกเรียบร้อยแล้ว\n\nMember Code: ${memberCode}\nรหัสบริษัท (แชร์ให้พนักงานใช้เข้าร่วม): ${companyCode}\n\nเมื่อนักท่องเที่ยวของคุณต้องการแพทย์ โทรหาเราได้ตลอด 24 ชั่วโมง`
+                : `ยินดีต้อนรับสู่ Doctor2Go Travel Network\nการสมัครของคุณเสร็จเรียบร้อยแล้ว\n\nMember Code:${memberCode}\n\nเมื่อนักท่องเที่ยวของคุณต้องการแพทย์ โทรหาเราได้ตลอด 24 ชั่วโมง`,
           },
         ],
       }),
     });
-    return { success: true, memberCode: memberCode };
+    return { success: true, memberCode: memberCode, companyCode: companyCode };
   },
 );
+
 exports.getMyProfile = onCall(
   { secrets: [lineChannelAccessToken] },
   async (request) => {
@@ -146,9 +202,32 @@ exports.getMyProfile = onCall(
     }
     const memberDoc = memberQuery.docs[0];
     const memberData = memberDoc.data();
+
+    if (memberData.memberType === "individual") {
+      return {
+        success: true,
+        profile: {
+          ...memberData,
+          paymentSchedule: "Within 24 Hours",
+        },
+      };
+    }
+
+    const companyDoc = await db
+      .collection("companies")
+      .doc(memberData.companyId)
+      .get();
+    const companyData = companyDoc.data();
+
     return {
       success: true,
-      profile: memberData,
+      profile: {
+        ...memberData,
+        companyName: companyData.companyName,
+        category: companyData.category,
+        paymentSchedule: companyData.paymentSchedule,
+        companyCode: companyData.companyCode,
+      },
     };
   },
 );
