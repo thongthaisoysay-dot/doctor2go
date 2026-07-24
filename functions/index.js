@@ -12,9 +12,7 @@ const { onRequest, onCall } = require("firebase-functions/https");
 const logger = require("firebase-functions/logger");
 
 const admin = require("firebase-admin");
-const { Transaction } = require("firebase-admin/firestore");
 const { defineSecret } = require("firebase-functions/params");
-const { Message } = require("firebase-functions/pubsub");
 const lineChannelAccessToken = defineSecret("LINE_CHANNEL_ACCESS_TOKEN");
 admin.initializeApp();
 
@@ -70,81 +68,50 @@ exports.completeRegistration = onCall(
     }
 
     const memberType = request.data.memberType;
-    const corporateMode = request.data.corporateMode;
-
-    let foundCompanyDoc = null;
-    if (memberType === "corporate" && corporateMode === "join") {
-      const companyQuery = await db
-        .collection("companies")
-        .where("companyCode", "==", request.data.companyCode)
-        .get();
-
-      if (companyQuery.empty) {
-        return { success: false, reason: "company_not_found" };
-      }
-      foundCompanyDoc = companyQuery.docs[0];
-    }
-
     const memberCounterRef = db.collection("counters").doc("memberCode");
-    const companyCounterRef = db.collection("counters").doc("companyCode");
 
-    const { memberCode, companyCode } = await db.runTransaction(
-      async (transaction) => {
-        const memberCounterDoc = await transaction.get(memberCounterRef);
-        const nextMemberNumber =
-          (memberCounterDoc.exists ? memberCounterDoc.data().value : 0) + 1;
-        const memberCode = `DG-${String(nextMemberNumber).padStart(6, "0")}`;
+    const { memberCode } = await db.runTransaction(async (transaction) => {
+      const memberCounterDoc = await transaction.get(memberCounterRef);
+      const nextMemberNumber =
+        (memberCounterDoc.exists ? memberCounterDoc.data().value : 0) + 1;
+      const memberCode = `DG-${String(nextMemberNumber).padStart(6, "0")}`;
 
-        let companyId = null;
-        let companyCode = null;
+      let companyId = null;
 
-        if (memberType === "corporate" && corporateMode === "create") {
-          const companyCounterDoc = await transaction.get(companyCounterRef);
-          const nextCompanyNumber =
-            (companyCounterDoc.exists ? companyCounterDoc.data().value : 0) + 1;
-          companyCode = `DGC-${String(nextCompanyNumber).padStart(6, "0")}`;
+      if (memberType === "corporate") {
+        const newCompanyRef = db.collection("companies").doc();
+        companyId = newCompanyRef.id;
 
-          const newCompanyRef = db.collection("companies").doc();
-          companyId = newCompanyRef.id;
-
-          transaction.set(newCompanyRef, {
-            companyName: request.data.companyName,
-            category: request.data.category,
-            companyCode: companyCode,
-            createdByLineUserId: lineUserId,
-            paymentSchedule: "Monthly Settlement",
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-          transaction.set(companyCounterRef, { value: nextCompanyNumber });
-        } else if (memberType === "corporate" && corporateMode === "join") {
-          companyId = foundCompanyDoc.id;
-          companyCode = foundCompanyDoc.data().companyCode;
-        }
-
-        transaction.set(memberCounterRef, { value: nextMemberNumber });
-
-        const newMemberRef = db.collection("members").doc();
-        transaction.set(newMemberRef, {
-          memberCode: memberCode,
-          memberType: memberType,
-          companyId: companyId,
-          role:
-            memberType === "corporate"
-              ? corporateMode === "create"
-                ? "admin"
-                : "employee"
-              : null,
-          name: request.data.name,
-          category: memberType === "individual" ? request.data.category : null,
-          email: request.data.email,
-          lineUserId: lineUserId,
-          phone: request.auth.token.phone_number,
+        transaction.set(newCompanyRef, {
+          companyName: request.data.companyName,
+          primaryContactName: request.data.name,
+          mobileNumber: request.auth.token.phone_number,
+          companyEmail: request.data.email,
+          category: request.data.category,
+          createdByLineUserId: lineUserId,
+          paymentSchedule: "Monthly Settlement",
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
+      }
 
-        return { memberCode, companyCode };
-      },
-    );
+      transaction.set(memberCounterRef, { value: nextMemberNumber });
+
+      const newMemberRef = db.collection("members").doc();
+      transaction.set(newMemberRef, {
+        memberCode: memberCode,
+        memberType: memberType,
+        companyId: companyId,
+        role: memberType === "corporate" ? "admin" : null,
+        name: request.data.name,
+        category: memberType === "individual" ? request.data.category : null,
+        email: request.data.email,
+        lineUserId: lineUserId,
+        phone: request.auth.token.phone_number,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return { memberCode };
+    });
 
     await fetch("https://api.line.me/v2/bot/message/push", {
       method: "POST",
@@ -158,14 +125,14 @@ exports.completeRegistration = onCall(
           {
             type: "text",
             text:
-              memberType === "corporate" && corporateMode === "create"
-                ? `ยินดีต้อนรับสู่ Doctor2Go Travel Network\nสร้างบริษัทและสมัครสมาชิกเรียบร้อยแล้ว\n\nMember Code: ${memberCode}\nรหัสบริษัท (แชร์ให้พนักงานใช้เข้าร่วม): ${companyCode}\n\nเมื่อนักท่องเที่ยวของคุณต้องการแพทย์ โทรหาเราได้ตลอด 24 ชั่วโมง`
-                : `ยินดีต้อนรับสู่ Doctor2Go Travel Network\nการสมัครของคุณเสร็จเรียบร้อยแล้ว\n\nMember Code:${memberCode}\n\nเมื่อนักท่องเที่ยวของคุณต้องการแพทย์ โทรหาเราได้ตลอด 24 ชั่วโมง`,
+              memberType === "corporate"
+                ? `Welcome to Doctor2Go Travel Network\nYour company account has been created.\n\nMember Code: ${memberCode}\n\nUse the "Invite a member" button in your profile to add your team - no code needed, just send them the link.\n\nWhen your travelers need a doctor, call us anytime, 24 hours a day.`
+                : `Welcome to Doctor2Go Travel Network\nYour registration is complete.\n\nMember Code: ${memberCode}\n\nWhen you need a doctor, call us anytime, 24 hours a day.`,
           },
         ],
       }),
     });
-    return { success: true, memberCode: memberCode, companyCode: companyCode };
+    return { success: true, memberCode: memberCode };
   },
 );
 
@@ -224,10 +191,154 @@ exports.getMyProfile = onCall(
       profile: {
         ...memberData,
         companyName: companyData.companyName,
+        primaryContactName: companyData.primaryContactName,
+        mobileNumber: companyData.mobileNumber,
+        companyEmail: companyData.companyEmail,
         category: companyData.category,
         paymentSchedule: companyData.paymentSchedule,
-        companyCode: companyData.companyCode,
       },
     };
+  },
+);
+
+exports.createInvite = onCall(async (request) => {
+  const lineIdToken = request.data.lineIdToken;
+  const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `id_token=${lineIdToken}&client_id=2010746451`,
+  });
+
+  const lineData = await lineResponse.json();
+
+  if (!lineResponse.ok) {
+    return { success: false, reason: "invalid_line_token" };
+  }
+
+  const lineUserId = lineData.sub;
+  const db = admin.firestore();
+  const memberQuery = await db
+    .collection("members")
+    .where("lineUserId", "==", lineUserId)
+    .get();
+
+  if (memberQuery.empty) {
+    return { success: false, reason: "member_not_found" };
+  }
+
+  const memberData = memberQuery.docs[0].data();
+
+  if (memberData.role !== "admin") {
+    return { success: false, reason: "not_admin" };
+  }
+
+  const newInviteRef = db.collection("invites").doc();
+  await newInviteRef.set({
+    companyId: memberData.companyId,
+    createdByLineUserId: lineUserId,
+    status: "pending",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return { success: true, inviteToken: newInviteRef.id };
+});
+
+exports.claimInvite = onCall(
+  { secrets: [lineChannelAccessToken] },
+  async (request) => {
+    const lineIdToken = request.data.lineIdToken;
+    const lineResponse = await fetch(
+      "https://api.line.me/oauth2/v2.1/verify",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `id_token=${lineIdToken}&client_id=2010746451`,
+      },
+    );
+
+    const lineData = await lineResponse.json();
+
+    if (!lineResponse.ok) {
+      return { success: false, reason: "invalid_line_token" };
+    }
+
+    const lineUserId = lineData.sub;
+    const db = admin.firestore();
+    const existingQuery = await db
+      .collection("members")
+      .where("lineUserId", "==", lineUserId)
+      .get();
+
+    if (!existingQuery.empty) {
+      return { success: false, reason: "duplicate" };
+    }
+
+    const inviteToken = request.data.inviteToken;
+    const inviteRef = db.collection("invites").doc(inviteToken);
+    const memberCounterRef = db.collection("counters").doc("memberCode");
+
+    let memberCode;
+    try {
+      ({ memberCode } = await db.runTransaction(async (transaction) => {
+        const inviteDoc = await transaction.get(inviteRef);
+        if (!inviteDoc.exists || inviteDoc.data().status !== "pending") {
+          throw new Error("invalid_invite");
+        }
+        const companyId = inviteDoc.data().companyId;
+
+        const memberCounterDoc = await transaction.get(memberCounterRef);
+        const nextMemberNumber =
+          (memberCounterDoc.exists ? memberCounterDoc.data().value : 0) + 1;
+        const memberCode = `DG-${String(nextMemberNumber).padStart(6, "0")}`;
+
+        transaction.set(memberCounterRef, { value: nextMemberNumber });
+
+        const newMemberRef = db.collection("members").doc();
+        transaction.set(newMemberRef, {
+          memberCode: memberCode,
+          memberType: "corporate",
+          companyId: companyId,
+          role: "member",
+          name: request.data.name,
+          category: null,
+          email: null,
+          lineUserId: lineUserId,
+          phone: request.auth.token.phone_number,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        transaction.update(inviteRef, {
+          status: "used",
+          usedByLineUserId: lineUserId,
+          usedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        return { memberCode };
+      }));
+    } catch (error) {
+      if (error.message === "invalid_invite") {
+        return { success: false, reason: "invalid_invite" };
+      }
+      throw error;
+    }
+
+    await fetch("https://api.line.me/v2/bot/message/push", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${lineChannelAccessToken.value()}`,
+      },
+      body: JSON.stringify({
+        to: lineUserId,
+        messages: [
+          {
+            type: "text",
+            text: `Welcome to Doctor2Go Travel Network\nYou've joined your company's account.\n\nMember Code: ${memberCode}\n\nWhen you need a doctor, call us anytime, 24 hours a day.`,
+          },
+        ],
+      }),
+    });
+
+    return { success: true, memberCode: memberCode };
   },
 );

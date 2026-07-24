@@ -97,25 +97,19 @@ h1 {
   margin-bottom: 6px;
 }
 
-/* ---------- Step 1b (company create/join choice) ---------- */
+/* ---------- Invite screen ---------- */
 
-#step1b {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  text-align: center;
-}
-
-#step1b h1 {
-  margin-bottom: 6px;
+#step-invite p {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 0 0 16px;
 }
 
 /* ---------- Buttons ---------- */
 
 #btn-individual,
 #btn-corporate,
-#btn-create-company,
-#btn-join-company,
+#btn-invite-next,
 #btn-step2-next,
 #btn-verify-otp,
 #btn-save-contact {
@@ -125,7 +119,7 @@ h1 {
   border-radius: var(--radius);
   background-color: var(--color-primary);
   color: #ffffff;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -136,8 +130,7 @@ h1 {
 
 #btn-individual:hover,
 #btn-corporate:hover,
-#btn-create-company:hover,
-#btn-join-company:hover,
+#btn-invite-next:hover,
 #btn-step2-next:hover,
 #btn-verify-otp:hover,
 #btn-save-contact:hover {
@@ -146,12 +139,38 @@ h1 {
 
 #btn-individual:active,
 #btn-corporate:active,
-#btn-create-company:active,
-#btn-join-company:active,
+#btn-invite-next:active,
 #btn-step2-next:active,
 #btn-verify-otp:active,
 #btn-save-contact:active {
   transform: scale(0.98);
+}
+
+#btn-invite-member {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 20px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius);
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+#btn-invite-member:hover {
+  background-color: #fddfe2;
+}
+
+#invite-link {
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 13px;
+  word-break: break-all;
+  background-color: var(--color-bg);
+  border-radius: var(--radius);
 }
 
 /* ---------- Form fields ---------- */
@@ -239,13 +258,6 @@ select:focus {
   margin: 4px 0;
 }
 
-#result-company-code {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin: 10px 0 4px;
-}
-
 #btn-save-contact {
   margin-top: 20px;
 }
@@ -301,40 +313,37 @@ select:focus {
 }
 
 #profile-name::before {
-  content: "ชื่อ";
+  content: "Name";
 }
 #profile-member-code::before {
-  content: "รหัสสมาชิก";
+  content: "Member Code";
 }
 #profile-member-type::before {
-  content: "ประเภทสมาชิก";
+  content: "Member Type";
 }
 #profile-category::before {
-  content: "ประเภทกิจการ";
+  content: "Business Type";
 }
 #profile-companyname::before {
-  content: "ชื่อบริษัท";
+  content: "Company Name";
 }
 #profile-Phone-user-number::before {
-  content: "เบอร์โทร";
+  content: "Phone";
 }
 #profile-email::before {
-  content: "อีเมล";
+  content: "Email";
 }
 #profile-payment-Schedule::before {
-  content: "รอบชำระเงิน";
+  content: "Payment Schedule";
 }
 #profile-createdAt::before {
-  content: "วันที่สมัคร";
+  content: "Joined On";
 }
 #profile-line-user-id::before {
   content: "LINE User ID";
 }
 #profile-role::before {
-  content: "ตำแหน่ง";
-}
-#profile-company-code::before {
-  content: "รหัสบริษัท";
+  content: "Role";
 }
 
 #profile-member-code {

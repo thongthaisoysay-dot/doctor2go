@@ -38,6 +38,13 @@ const LIFF_ID = "2010746451-zVL3e0wH";
 const DOCTOR2GO_PHONE = "0856630663";
 
 const getMyProfile = httpsCallable(functions, "getMyProfile");
+const createInvite = httpsCallable(functions, "createInvite");
+const claimInvite = httpsCallable(functions, "claimInvite");
+
+const roleLabels = {
+  admin: "Account Owner",
+  member: "Household Member",
+};
 
 async function main() {
   await liff.init({ liffId: LIFF_ID });
@@ -59,7 +66,7 @@ async function main() {
   if (profileResponse.data.success) {
     document.getElementById("step-myprofile").style.display = "flex";
     document.getElementById("status").textContent =
-      `สวัสดี ${userProfile.displayName}`;
+      `Hello, ${userProfile.displayName}`;
     document.getElementById("profile-name").textContent =
       profileResponse.data.profile.name;
     document.getElementById("profile-category").textContent =
@@ -77,13 +84,13 @@ async function main() {
 
     if (profileResponse.data.profile.memberType === "individual") {
       document.getElementById("profile-role").style.display = "none";
-      document.getElementById("profile-company-code").style.display = "none";
+    } else {
+      document.getElementById("profile-role").textContent =
+        roleLabels[profileResponse.data.profile.role] || "";
+      if (profileResponse.data.profile.role === "admin") {
+        document.getElementById("btn-invite-member").style.display = "block";
+      }
     }
-
-    document.getElementById("profile-role").textContent =
-      profileResponse.data.profile.role;
-    document.getElementById("profile-company-code").textContent =
-      profileResponse.data.profile.companyCode;
 
     document.getElementById("profile-Phone-user-number").textContent =
       profileResponse.data.profile.phone;
@@ -93,11 +100,21 @@ async function main() {
       profileResponse.data.profile.createdAt._seconds * 1000,
     );
     document.getElementById("profile-createdAt").textContent =
-      createdAtDate.toLocaleDateString("th-TH");
+      createdAtDate.toLocaleDateString("en-US");
   } else {
     document.getElementById("status").textContent =
-      `สวัสดี ${userProfile.displayName}`;
-    document.getElementById("step1").style.display = "flex";
+      `Hello, ${userProfile.displayName}`;
+
+    const urlParams = new URLSearchParams(location.search);
+    inviteToken = urlParams.get("invite");
+
+    if (inviteToken) {
+      document.getElementById("input-invite-name").value =
+        userProfile.displayName;
+      document.getElementById("step-invite").style.display = "block";
+    } else {
+      document.getElementById("step1").style.display = "flex";
+    }
   }
 }
 
@@ -107,6 +124,7 @@ let memberType = null;
 let userProfile = null;
 let confirmationResult = null;
 let corporateMode = null;
+let inviteToken = null;
 
 document
   .getElementById("btn-individual")
@@ -118,60 +136,60 @@ document
     document.getElementById("input-name").value = userProfile.displayName;
     document.getElementById("input-category").innerHTML =
       "<option>Licensed Guide</option><option>Tour Leader</option><option>Travel Coordinator</option><option>Transportation</option><option>Hotel</option><option>Other</option>";
-    document.getElementById("step2-title").textContent = "ข้อมูลของคุณ";
+    document.getElementById("step2-title").textContent = "Your information";
   });
 document.getElementById("btn-corporate").addEventListener("click", function () {
   memberType = "corporate";
+  corporateMode = "create";
   console.log(memberType);
   document.getElementById("step1").style.display = "none";
-  document.getElementById("step1b").style.display = "flex";
+  document.getElementById("step2").style.display = "block";
+  document.getElementById("input-name").value = userProfile.displayName;
+  document.getElementById("input-company-name").style.display = "block";
+  document.getElementById("input-email").placeholder = "Company email";
+  document.getElementById("input-category").innerHTML =
+    "<option>Tour Company</option><option>Travel Agency</option><option>DMC</option><option>Hotel</option><option>Transportation</option><option>Other</option>";
 });
 
-document
-  .getElementById("btn-create-company")
-  .addEventListener("click", function () {
-    corporateMode = "create";
-    document.getElementById("step1b").style.display = "none";
-    document.getElementById("step2").style.display = "block";
-    document.getElementById("input-name").value = userProfile.displayName;
-    document.getElementById("input-company-name").style.display = "block";
-    document.getElementById("input-category").innerHTML =
-      "<option>Tour Company</option><option>Travel Agency</option><option>DMC</option><option>Hotel</option><option>Transportation</option><option>Other</option>";
-  });
-document
-  .getElementById("btn-join-company")
-  .addEventListener("click", function () {
-    corporateMode = "join";
-    document.getElementById("step1b").style.display = "none";
-    document.getElementById("step2").style.display = "block";
-    document.getElementById("input-name").value = userProfile.displayName;
-    document.getElementById("input-category").style.display = "none";
+//ตัวช่วยส่ง OTP ให้เบอร์ phoneNumber ใช้ร่วมกันทั้งฟอร์มสมัครปกติ (step2) และฟอร์มรับเชิญ (step-invite)
+async function sendOtp(phoneNumber) {
+  //ตัดตัวอักษรแรกทิ้ง (ตัด 0 ออก) เหลือ 812345678 เอาไปต่อท้าย +66 ด้วยเครื่องหมาย +
+  const formattedPhone = "+66" + phoneNumber.slice(1);
+  //สร้างตัวจับบอทขึ้นมา1ชิ้น จากพิมพ์เขียว RecaptchaVerifierที่ firebase เตรียมไว้ให้ ต้องบอก3อย่าง "1 ใช้กับ authไหน "  "2 จะเอาไปแปะไหน"
+  const recaptchaVerifier = new RecaptchaVerifier(
+    auth,
+    "recaptcha-container",
+    { size: "invisible" },
+  );
 
-    document.getElementById("input-company-code").style.display = "block";
-  });
+  //สั่งให้ Firebase ส่ง SMS OTP จริง ไปที่เบอร์ formattedPhone โดยผ่านการตรวจสอบของ recaptchaVerifier ก่อน (กันบอทสแปม)
+  confirmationResult = await signInWithPhoneNumber(
+    auth,
+    formattedPhone,
+    recaptchaVerifier,
+  );
+}
 
 document
   .getElementById("btn-step2-next")
   .addEventListener("click", async function () {
     try {
-      //ดึงข้อความที่ผู้ใช้พิมพ์ในช่องกรอกเบอร์โทรเช่น "0812345678" มาเก็บไว้ในตัวแปร phoneNumber
       const phoneNumber = document.getElementById("input-phone").value;
-      //ตัดตัวอักษรแรกทิ้ง (ตัด 0 ออก) เหลือ 812345678 เอาไปต่อท้าย +66 ด้วยเครื่องหมาย +
-      const formattedPhone = "+66" + phoneNumber.slice(1);
-      //สร้างตัวจับบอทขึ้นมา1ชิ้น จากพิมพ์เขียว RecaptchaVerifierที่ firebase เตรียมไว้ให้ ต้องบอก3อย่าง "1 ใช้กับ authไหน "  "2 จะเอาไปแปะไหน"
-      const recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        { size: "invisible" },
-      );
-
-      //สั่งให้ Firebase ส่ง SMS OTP จริง ไปที่เบอร์ formattedPhone โดยผ่านการตรวจสอบของ recaptchaVerifier ก่อน (กันบอทสแปม)
-      confirmationResult = await signInWithPhoneNumber(
-        auth,
-        formattedPhone,
-        recaptchaVerifier,
-      );
+      await sendOtp(phoneNumber);
       document.getElementById("step2").style.display = "none";
+      document.getElementById("step3").style.display = "block";
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+document
+  .getElementById("btn-invite-next")
+  .addEventListener("click", async function () {
+    try {
+      const phoneNumber = document.getElementById("input-invite-phone").value;
+      await sendOtp(phoneNumber);
+      document.getElementById("step-invite").style.display = "none";
       document.getElementById("step3").style.display = "block";
     } catch (error) {
       console.log(error);
@@ -186,45 +204,54 @@ document
       const otpCode = document.getElementById("input-otp").value;
       //หลังจากผู้ใช้งานกด ยืนยัน ดึงรหัส OTP ที่พิม (otpCode)ส่งไปเช็คกับFirebase ถ้าถูกจะได้ผู้ใช้ที่ยืนยันเบอร์แล้วเก็บไว้ใน result แต่หากผิดจะจับ catch
       const result = await confirmationResult.confirm(otpCode);
-      const formData = {
-        //มาจากตัวแปร JS ที่มีอยู่แล้ว เช่น memberType: memberType, — เอาค่าตัวแปรที่ประกาศไว้ข้างบนมาใส่ตรงๆ
-        memberType: memberType,
-        //มาจากค่าที่ผู้ใช้พิมพ์ในกล่อง input เช่น companyName: document.getElementById("input-company-name").value, — ไปหยิบค่าจาก element ที่มี id นั้นๆ
-        name: document.getElementById("input-name").value,
-        category: document.getElementById("input-category").value,
-        email: document.getElementById("input-email").value,
-        companyName: document.getElementById("input-company-name").value,
-        corporateMode: corporateMode,
-        companyCode: document.getElementById("input-company-code").value,
-      };
       const lineIdToken = liff.getIDToken();
 
-      const response = await completeRegistration({
-        ...formData,
-        lineIdToken: lineIdToken,
-      });
+      let response;
+      if (inviteToken) {
+        //มาจากการกดลิงก์เชิญ — ไม่ผ่าน completeRegistration แต่ไปผูกเข้าบริษัทที่มีอยู่แล้วผ่าน claimInvite แทน
+        response = await claimInvite({
+          inviteToken: inviteToken,
+          name: document.getElementById("input-invite-name").value,
+          lineIdToken: lineIdToken,
+        });
+      } else {
+        const formData = {
+          //มาจากตัวแปร JS ที่มีอยู่แล้ว เช่น memberType: memberType, — เอาค่าตัวแปรที่ประกาศไว้ข้างบนมาใส่ตรงๆ
+          memberType: memberType,
+          //มาจากค่าที่ผู้ใช้พิมพ์ในกล่อง input เช่น companyName: document.getElementById("input-company-name").value, — ไปหยิบค่าจาก element ที่มี id นั้นๆ
+          name: document.getElementById("input-name").value,
+          category: document.getElementById("input-category").value,
+          email: document.getElementById("input-email").value,
+          companyName: document.getElementById("input-company-name").value,
+          corporateMode: corporateMode,
+        };
+        response = await completeRegistration({
+          ...formData,
+          lineIdToken: lineIdToken,
+        });
+      }
 
       if (response.data.success) {
         document.getElementById("step3").style.display = "none";
         document.getElementById("step4").style.display = "block";
         document.getElementById("result-member-code").textContent =
           "Member Code: " + response.data.memberCode;
-        document.getElementById("result-member-type").textContent =
-          "ประเภทสมาชิก: " + memberType;
-        document.getElementById("result-payment-schedule").textContent =
-          "รอบจ่ายเงิน" +
-          (memberType === "corporate"
-            ? "Monthly Settlement"
-            : "Within 24 Hours");
-        //ถ้า response.data.companyCode มีค่าอยู่จริง ให้ทำโค้ดข้างใน
-        if (response.data.companyCode) {
-          //ไปหาช่อง element "result-company-code" --> แล้วเตรียมจะใส่ข้อความ ก็คือ "รหัสบริษัทของคุณ:" + response.data.companyCode
-          document.getElementById("result-company-code").textContent =
-            "รหัสบริษัทของคุณ:" + response.data.companyCode;
+
+        if (inviteToken) {
+          document.getElementById("result-member-type").textContent =
+            "Member Type: Household Member";
+        } else {
+          document.getElementById("result-member-type").textContent =
+            "Member Type: " + memberType;
+          document.getElementById("result-payment-schedule").textContent =
+            "Payment Schedule: " +
+            (memberType === "corporate"
+              ? "Monthly Settlement"
+              : "Within 24 Hours");
         }
       } else {
         alert(
-          "เหตุผล: " +
+          "Reason: " +
             response.data.reason +
             "/" +
             JSON.stringify(response.data.lineData),
@@ -243,5 +270,26 @@ document
     document.getElementById("link-call").href = "tel:" + DOCTOR2GO_PHONE;
     document.getElementById("link-call").style.display = "block";
     await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
-    alert("คัดลอกเบอร์ Doctor2Go แล้ว");
+    alert("Doctor2Go number copied");
+  });
+
+document
+  .getElementById("btn-invite-member")
+  .addEventListener("click", async function () {
+    try {
+      const lineIdToken = liff.getIDToken();
+      const response = await createInvite({ lineIdToken: lineIdToken });
+
+      if (response.data.success) {
+        const inviteLink = `https://liff.line.me/${LIFF_ID}?invite=${response.data.inviteToken}`;
+        document.getElementById("invite-link").textContent = inviteLink;
+        document.getElementById("invite-link").style.display = "block";
+        await navigator.clipboard.writeText(inviteLink);
+        alert("Invite link copied. Send it to your new member.");
+      } else {
+        alert("Could not create an invite link: " + response.data.reason);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   });

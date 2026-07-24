@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,56 +13,54 @@
         <img src="Car.png" alt="" class="car" aria-hidden="true" />
       </div>
       <div id="step1" style="display: none">
-        <h1>เลือกประเภทการสมัคร</h1>
-        <button id="btn-individual">บุคคล</button>
-        <button id="btn-corporate">บริษัท</button>
+        <h1>Choose your account type</h1>
+        <button id="btn-individual">Individual</button>
+        <button id="btn-corporate">Company</button>
       </div>
-
-      <div id="step1b" style="display: none">
-        <button id="btn-create-company">สร้างใหม่</button>
-        <button id="btn-join-company">เข้าร่วมบริษัทที่เป็นสมาชิก</button>
+      <div id="step-invite" style="display: none">
+        <h2>You've been invited</h2>
+        <p>Enter your details to join your company's account.</p>
+        <input type="text" id="input-invite-name" placeholder="Full name" />
+        <input type="tel" id="input-invite-phone" placeholder="Phone number" />
+        <button id="btn-invite-next">Next</button>
       </div>
       <div id="step2" style="display: none">
-        <h2 id="step2-title">กรอกข้อมูลของคุณ</h2>
+        <h2 id="step2-title">Enter your details</h2>
 
         <input
           type="text"
           id="input-company-name"
-          placeholder="ชื่อบริษัท"
+          placeholder="Company Name"
           style="display: none"
         />
-        <input
-          type="text"
-          id="input-company-code"
-          placeholder="ใส่รหัสบริษัทของคุณเลย"
-          style="display: none"
-        />
-        <input type="text" id="input-name" placeholder="ชื่อ-นามสกุล" />
-        <input type="tel" id="input-phone" placeholder="เบอร์โทรศัพท์" />
+        <input type="text" id="input-name" placeholder="Full name" />
+        <input type="tel" id="input-phone" placeholder="Phone number" />
         <select id="input-category"></select>
-        <input type="email" id="input-email" placeholder="อีเมล (ไม่บังคับ)" />
-        <button id="btn-step2-next">ถัดไป</button>
+        <input type="email" id="input-email" placeholder="Company email" />
+        <button id="btn-step2-next">Next</button>
       </div>
       <div id="step3" style="display: none">
-        <p class="otp-hint">เราส่งรหัส 6 หลักไปที่เบอร์ของคุณแล้ว</p>
+        <p class="otp-hint">We've sent an OTP to your phone</p>
         <input
           type="text"
           id="input-otp"
-          placeholder="รหัส OTP"
+          placeholder="OTP code"
           inputmode="numeric"
         />
         <div id="recaptcha-container"></div>
-        <button id="btn-verify-otp">ยืนยัน</button>
+        <button id="btn-verify-otp">Verify</button>
       </div>
       <div id="step4" style="display: none">
-        <h2>ยินดีต้อนรับสู่<br />Doctor2GO Travel Network</h2>
+        <h2>Welcome to Doctor2GO Travel Network.</h2>
+        <h4>
+          We're here to help when travelers need medical advice or a doctor
+        </h4>
         <p id="result-member-code"></p>
         <p id="result-member-type"></p>
         <p id="result-payment-schedule"></p>
-        <p id="result-company-code"></p>
-        <button id="btn-save-contact">บันทึกเบอร์ Doctor2Go</button>
+        <button id="btn-save-contact">Save Doctor2Go Number</button>
         <p id="doctor2go-phone" style="display: none"></p>
-        <a id="link-call" href="" style="display: none">โทรเลย</a>
+        <a id="link-call" href="" style="display: none">Call now</a>
       </div>
       <div id="step-myprofile" style="display: none">
         <h2>Profile</h2>
@@ -77,9 +75,12 @@
         <p id="profile-payment-Schedule"></p>
         <p id="profile-Phone-user-number"></p>
         <p id="profile-role"></p>
-        <p id="profile-company-code"></p>
+        <button id="btn-invite-member" style="display: none">
+          Invite a Member
+        </button>
+        <p id="invite-link" style="display: none"></p>
       </div>
-      <p id="status">กำลังโหลด...</p>
+      <p id="status">Loading...</p>
     </div>
 
     <script
