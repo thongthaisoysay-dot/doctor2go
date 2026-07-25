@@ -157,11 +157,9 @@ async function sendOtp(phoneNumber) {
   //ตัดตัวอักษรแรกทิ้ง (ตัด 0 ออก) เหลือ 812345678 เอาไปต่อท้าย +66 ด้วยเครื่องหมาย +
   const formattedPhone = "+66" + phoneNumber.slice(1);
   //สร้างตัวจับบอทขึ้นมา1ชิ้น จากพิมพ์เขียว RecaptchaVerifierที่ firebase เตรียมไว้ให้ ต้องบอก3อย่าง "1 ใช้กับ authไหน "  "2 จะเอาไปแปะไหน"
-  const recaptchaVerifier = new RecaptchaVerifier(
-    auth,
-    "recaptcha-container",
-    { size: "invisible" },
-  );
+  const recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+    size: "invisible",
+  });
 
   //สั่งให้ Firebase ส่ง SMS OTP จริง ไปที่เบอร์ formattedPhone โดยผ่านการตรวจสอบของ recaptchaVerifier ก่อน (กันบอทสแปม)
   confirmationResult = await signInWithPhoneNumber(
@@ -175,6 +173,25 @@ document
   .getElementById("btn-step2-next")
   .addEventListener("click", async function () {
     try {
+      if (memberType === "corporate") {
+        const companyNameInput =
+          document.getElementById("input-company-name").value;
+        const lineIdToken = liff.getIDToken();
+
+        const response = await searchCompanies({
+          query: companyNameInput,
+          lineIdToken: lineIdToken,
+        });
+        const isDuplicate = response.data.companyNames.some(
+          (name) =>
+            name.trim().toLowerCase() === companyNameInput.trim().toLowerCase(),
+        );
+        if (isDuplicate) {
+          alert("This company is already registered.");
+          return;
+        }
+      }
+
       const phoneNumber = document.getElementById("input-phone").value;
       await sendOtp(phoneNumber);
       document.getElementById("step2").style.display = "none";
