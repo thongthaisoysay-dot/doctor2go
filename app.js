@@ -187,7 +187,7 @@ document
             name.trim().toLowerCase() === companyNameInput.trim().toLowerCase(),
         );
         if (isDuplicate) {
-          alert("This company is already registered.");
+          showAlert("This company is already registered.");
           return;
         }
       }
@@ -268,11 +268,11 @@ document
               : "Within 24 Hours");
         }
       } else if (response.data.reason === "company_already_exists") {
-        alert(
+        showAlert(
           "This company is already registered. Please ask your company's admin to send you an invite link instead of creating a new account.",
         );
       } else {
-        alert(
+        showAlert(
           "Reason: " +
             response.data.reason +
             "/" +
@@ -284,6 +284,14 @@ document
     }
   });
 
+function showAlert(message) {
+  document.getElementById("message-alert").textContent = message;
+  document.getElementById("custom-alert").style.display = "flex";
+}
+
+document.getElementById("btn-alert").addEventListener("click", function () {
+  document.getElementById("custom-alert").style.display = "none";
+});
 document
   .getElementById("btn-save-contact")
   .addEventListener("click", async function () {
@@ -292,7 +300,7 @@ document
     document.getElementById("link-call").href = "tel:" + DOCTOR2GO_PHONE;
     document.getElementById("link-call").style.display = "block";
     await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
-    alert("Doctor2Go number copied");
+    showAlert("Doctor2Go number copied");
   });
 
 let companySearchTimeout = null;
@@ -364,9 +372,9 @@ document
         document.getElementById("invite-link").textContent = inviteLink;
         document.getElementById("invite-link").style.display = "block";
         await navigator.clipboard.writeText(inviteLink);
-        alert("Invite link copied. Send it to your new member.");
+        showAlert("Invite link copied. Send it to your new member.");
       } else {
-        alert("Could not create an invite link: " + response.data.reason);
+        showAlert("Could not create an invite link: " + response.data.reason);
       }
     } catch (error) {
       console.log(error);

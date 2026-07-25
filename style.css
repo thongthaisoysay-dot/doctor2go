@@ -413,3 +413,58 @@ select:focus {
   color: var(--color-text-muted);
   margin: 24px 0 0;
 }
+
+/*----------- Custom Alert -----------*/
+#custom-alert {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+#white-block-alert {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 16px;
+  background-color: var(--color-card);
+  border-radius: var(--radius-lg);
+  padding: 28px 22px;
+  text-align: center;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+#message-alert {
+  margin: 0 0 20px;
+  font-size: 15px;
+  color: var(--color-dark);
+  line-height: 1.5;
+}
+
+#btn-alert {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: var(--radius);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+#btn-alert:hover {
+  background-color: var(--color-primary-dark);
+}
+
+#btn-alert:active {
+  transform: scale(0.98);
+}
