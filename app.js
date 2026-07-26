@@ -56,6 +56,9 @@ async function main() {
   }
 
   userProfile = await liff.getProfile();
+  const logoImg = document.getElementById("app-logo");
+  logoImg.src = userProfile.pictureUrl;
+  logoImg.classList.add("logo--profile");
 
   const lineIdToken = liff.getIDToken();
   const profileResponse = await getMyProfile({
@@ -91,8 +94,16 @@ let confirmationResult = null;
 let corporateMode = null;
 let inviteToken = null;
 
+function hideAllSteps() {
+  document.getElementById("step1").style.display = "none";
+  document.getElementById("step-invite").style.display = "none";
+  document.getElementById("step2").style.display = "none";
+  document.getElementById("step3").style.display = "none";
+  document.getElementById("step4").style.display = "none";
+  document.getElementById("step-myprofile").style.display = "none";
+}
+
 function showProfile(profileData) {
-  document.getElementById("profile-icon").src = userProfile.pictureUrl;
   document.getElementById("step-myprofile").style.display = "flex";
   document.getElementById("profile-name").textContent = profileData.name;
   document.getElementById("profile-category").textContent =
@@ -337,11 +348,15 @@ document
     showAlert("Doctor2Go number copied");
   });
 document
-  .getElementById("btn-go-profile")
+  .getElementById("app-logo")
   .addEventListener("click", async function () {
     const lineIdToken = liff.getIDToken();
     const profileResponse = await getMyProfile({ lineIdToken: lineIdToken });
-    document.getElementById("step4").style.display = "none";
+    if (!profileResponse.data.success) {
+      showAlert("Please finish registering first.");
+      return;
+    }
+    hideAllSteps();
     showProfile(profileResponse.data.profile);
   });
 

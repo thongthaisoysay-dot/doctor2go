@@ -469,16 +469,11 @@ select:focus {
   transform: scale(0.98);
 }
 /*--------------Profile--------------*/
-#btn-go-profile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-#profile-icon {
-  width: 24px;
-  height: 24px;
+.logo--profile {
+  width: 100px;
+  height: 100px;
+  max-width: 100px;
   border-radius: 50%;
+  cursor: pointer;
   object-fit: cover;
 }
