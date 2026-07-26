@@ -227,6 +227,19 @@ document
   .getElementById("btn-invite-next")
   .addEventListener("click", async function () {
     try {
+      const inviteNameValue =
+        document.getElementById("input-invite-name").value;
+      const inviteReversePhoneValue =
+        document.getElementById("input-invite-phone").value;
+
+      if (
+        inviteNameValue.trim() === "" ||
+        inviteReversePhoneValue.trim() === ""
+      ) {
+        showAlert("Some required fields are missing.");
+        return;
+      }
+
       const phoneNumber = document.getElementById("input-invite-phone").value;
       await sendOtp(phoneNumber);
       document.getElementById("step-invite").style.display = "none";
