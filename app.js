@@ -10,7 +10,6 @@ import {
   getFunctions,
   httpsCallable,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
-import { encode } from "node:punycode";
 
 //เปรียบเหมือนบัตรประชาชนของ App
 const firebaseConfig = {
