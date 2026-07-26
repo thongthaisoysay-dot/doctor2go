@@ -64,48 +64,12 @@ async function main() {
   console.log(profileResponse);
 
   //อ่านว่า "เอา profileResponse → เปิดกล่อง .data → เปิดกล่อง .success ข้างใน → เอาค่า true/false นั้นมาเช็ค"
+  document.getElementById("status").textContent =
+    `Hello, ${userProfile.displayName}`;
+
   if (profileResponse.data.success) {
-    document.getElementById("step-myprofile").style.display = "flex";
-    document.getElementById("status").textContent =
-      `Hello, ${userProfile.displayName}`;
-    document.getElementById("profile-name").textContent =
-      profileResponse.data.profile.name;
-    document.getElementById("profile-category").textContent =
-      profileResponse.data.profile.category;
-    document.getElementById("profile-companyname").textContent =
-      profileResponse.data.profile.companyName;
-    document.getElementById("profile-email").textContent =
-      profileResponse.data.profile.email;
-    document.getElementById("profile-line-user-id").textContent =
-      profileResponse.data.profile.lineUserId;
-    document.getElementById("profile-member-code").textContent =
-      profileResponse.data.profile.memberCode;
-    document.getElementById("profile-member-type").textContent =
-      profileResponse.data.profile.memberType;
-
-    if (profileResponse.data.profile.memberType === "individual") {
-      document.getElementById("profile-role").style.display = "none";
-    } else {
-      document.getElementById("profile-role").textContent =
-        roleLabels[profileResponse.data.profile.role] || "";
-      if (profileResponse.data.profile.role === "admin") {
-        document.getElementById("btn-invite-member").style.display = "block";
-      }
-    }
-
-    document.getElementById("profile-Phone-user-number").textContent =
-      profileResponse.data.profile.phone;
-    document.getElementById("profile-payment-Schedule").textContent =
-      profileResponse.data.profile.paymentSchedule;
-    const createdAtDate = new Date(
-      profileResponse.data.profile.createdAt._seconds * 1000,
-    );
-    document.getElementById("profile-createdAt").textContent =
-      createdAtDate.toLocaleDateString("en-US");
+    showProfile(profileResponse.data.profile);
   } else {
-    document.getElementById("status").textContent =
-      `Hello, ${userProfile.displayName}`;
-
     const urlParams = new URLSearchParams(location.search);
     inviteToken = urlParams.get("invite");
 
@@ -126,6 +90,41 @@ let userProfile = null;
 let confirmationResult = null;
 let corporateMode = null;
 let inviteToken = null;
+
+function showProfile(profileData) {
+  document.getElementById("profile-icon").src = userProfile.pictureUrl;
+  document.getElementById("step-myprofile").style.display = "flex";
+  document.getElementById("profile-name").textContent = profileData.name;
+  document.getElementById("profile-category").textContent =
+    profileData.category;
+  document.getElementById("profile-companyname").textContent =
+    profileData.companyName;
+  document.getElementById("profile-email").textContent = profileData.email;
+  document.getElementById("profile-line-user-id").textContent =
+    profileData.lineUserId;
+  document.getElementById("profile-member-code").textContent =
+    profileData.memberCode;
+  document.getElementById("profile-member-type").textContent =
+    profileData.memberType;
+
+  if (profileData.memberType === "individual") {
+    document.getElementById("profile-role").style.display = "none";
+  } else {
+    document.getElementById("profile-role").textContent =
+      roleLabels[profileData.role] || "";
+    if (profileData.role === "admin") {
+      document.getElementById("btn-invite-member").style.display = "block";
+    }
+  }
+
+  document.getElementById("profile-Phone-user-number").textContent =
+    profileData.phone;
+  document.getElementById("profile-payment-Schedule").textContent =
+    profileData.paymentSchedule;
+  const createdAtDate = new Date(profileData.createdAt._seconds * 1000);
+  document.getElementById("profile-createdAt").textContent =
+    createdAtDate.toLocaleDateString("en-US");
+}
 
 document
   .getElementById("btn-individual")
@@ -336,6 +335,14 @@ document
     document.getElementById("link-call").style.display = "block";
     await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
     showAlert("Doctor2Go number copied");
+  });
+document
+  .getElementById("btn-go-profile")
+  .addEventListener("click", async function () {
+    const lineIdToken = liff.getIDToken();
+    const profileResponse = await getMyProfile({ lineIdToken: lineIdToken });
+    document.getElementById("step4").style.display = "none";
+    showProfile(profileResponse.data.profile);
   });
 
 let companySearchTimeout = null;
