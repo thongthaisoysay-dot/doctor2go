@@ -173,6 +173,28 @@ document
   .getElementById("btn-step2-next")
   .addEventListener("click", async function () {
     try {
+      const nameValue = document.getElementById("input-name").value;
+      const phoneValue = document.getElementById("input-phone").value;
+      const emailValue = document.getElementById("input-email").value;
+
+      if (
+        nameValue.trim() === "" ||
+        phoneValue.trim() === "" ||
+        emailValue.trim() === ""
+      ) {
+        showAlert("Some required fields are missing.");
+        return;
+      }
+
+      if (memberType === "corporate") {
+        const companyNameValue =
+          document.getElementById("input-company-name").value;
+        if (companyNameValue.trim() === "") {
+          showAlert("Some required fields are missing.");
+          return;
+        }
+      }
+
       if (memberType === "corporate") {
         const companyNameInput =
           document.getElementById("input-company-name").value;
