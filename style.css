@@ -500,9 +500,4 @@ select:focus {
   border-radius: 50%;
   cursor: pointer;
   object-fit: cover;
-  transition: transform 0.1s ease;
-}
-
-.logo--profile:active {
-  transform: scale(0.92);
 }
