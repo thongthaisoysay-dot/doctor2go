@@ -85,8 +85,6 @@ async function main() {
     inviteToken = urlParams.get("invite");
 
     if (inviteToken) {
-      document.getElementById("input-invite-name").value =
-        userProfile.displayName;
       document.getElementById("step-invite").style.display = "block";
     } else {
       document.getElementById("step1").style.display = "flex";
@@ -171,7 +169,7 @@ document
     console.log(memberType);
     document.getElementById("step1").style.display = "none";
     document.getElementById("step2").style.display = "block";
-    document.getElementById("input-name").value = userProfile.displayName;
+
     document.getElementById("input-category").innerHTML =
       "<option>Licensed Guide</option><option>Tour Leader</option><option>Travel Coordinator</option><option>Transportation</option><option>Hotel</option><option>Other</option>";
     document.getElementById("step2-title").textContent = "Your information";
@@ -182,7 +180,7 @@ document.getElementById("btn-corporate").addEventListener("click", function () {
   console.log(memberType);
   document.getElementById("step1").style.display = "none";
   document.getElementById("step2").style.display = "block";
-  document.getElementById("input-name").value = userProfile.displayName;
+
   document.getElementById("input-company-name").style.display = "block";
   document.getElementById("input-email").placeholder = "Company email";
   document.getElementById("input-category").innerHTML =
