@@ -371,6 +371,25 @@ document
     document.getElementById("doctor2go-phone").style.display = "block";
     document.getElementById("link-call").href = "tel:" + DOCTOR2GO_PHONE;
     document.getElementById("link-call").style.display = "block";
+
+    const vCardText =
+      "BEGIN:VCARD\n" +
+      "VERSION:3.0\n" +
+      "FN:Doctor2Go\n" +
+      "TEL:" +
+      DOCTOR2GO_PHONE +
+      "\n" +
+      "END:VCARD";
+
+    const vCardBlob = new Blob([vCardText], { type: "text/vcard" });
+    const vCardUrl = URL.createObjectURL(vCardBlob);
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = vCardUrl;
+    downloadLink.download = "Doctor2Go.vcf";
+
+    downloadLink.click();
+
     await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
     showAlert("Doctor2Go number copied");
   });
