@@ -71,7 +71,15 @@ async function main() {
     `Hello, ${userProfile.displayName}`;
 
   if (profileResponse.data.success) {
-    showProfile(profileResponse.data.profile);
+    const profile = profileResponse.data.profile;
+    document.getElementById("step4").style.display = "block";
+    document.getElementById("result-member-code").textContent =
+      "Member Code: " + profile.memberCode;
+    document.getElementById("result-member-type").textContent =
+      "Member Type: " +
+      (profile.role === "member" ? "Household Member" : profile.memberType);
+    document.getElementById("result-payment-schedule").textContent =
+      "Payment Schedule: " + profile.paymentSchedule;
   } else {
     const urlParams = new URLSearchParams(location.search);
     inviteToken = urlParams.get("invite");
