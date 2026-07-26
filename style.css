@@ -516,6 +516,7 @@ select:focus {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: max-content;
   background-color: #06c755;
   color: #ffffff;
   text-decoration: none;
