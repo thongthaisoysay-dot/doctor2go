@@ -372,20 +372,6 @@ document
     document.getElementById("link-call").href = "tel:" + DOCTOR2GO_PHONE;
     document.getElementById("link-call").style.display = "block";
 
-    const vCardText =
-      "BEGIN:VCARD\n" +
-      "VERSION:3.0\n" +
-      "FN:Doctor2Go\n" +
-      "TEL:" +
-      DOCTOR2GO_PHONE +
-      "\n" +
-      "END:VCARD";
-
-    const vCardDataUri =
-      "data:text/vcard;charset=utf-8," + encodeURIComponent(vCardText);
-
-    liff.openWindow({ url: vCardDataUri, external: true });
-
     await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
     showAlert("Doctor2Go number copied");
   });
