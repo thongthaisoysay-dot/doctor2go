@@ -481,3 +481,4 @@ document
       console.log(error);
     }
   });
+document.body.addEventListener("touchstart", function () {}, false);
