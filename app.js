@@ -10,6 +10,7 @@ import {
   getFunctions,
   httpsCallable,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
+import { encode } from "node:punycode";
 
 //เปรียบเหมือนบัตรประชาชนของ App
 const firebaseConfig = {
@@ -381,14 +382,10 @@ document
       "\n" +
       "END:VCARD";
 
-    const vCardBlob = new Blob([vCardText], { type: "text/vcard" });
-    const vCardUrl = URL.createObjectURL(vCardBlob);
+    const vCardDataUri =
+      "data:text/vcard;charset=utf-8," + encodeURIComponent(vCardText);
 
-    const downloadLink = document.createElement("a");
-    downloadLink.href = vCardUrl;
-    downloadLink.download = "Doctor2Go.vcf";
-
-    downloadLink.click();
+    location.href = vCardDataUri;
 
     await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
     showAlert("Doctor2Go number copied");
