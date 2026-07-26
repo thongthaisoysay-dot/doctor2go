@@ -384,7 +384,7 @@ document
     const vCardDataUri =
       "data:text/vcard;charset=utf-8," + encodeURIComponent(vCardText);
 
-    location.href = vCardDataUri;
+    liff.openWindow({ url: vCardDataUri, external: true });
 
     await navigator.clipboard.writeText(DOCTOR2GO_PHONE);
     showAlert("Doctor2Go number copied");
