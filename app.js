@@ -369,6 +369,9 @@ document
 document
   .getElementById("app-logo")
   .addEventListener("click", async function () {
+    if (document.getElementById("step-myprofile").style.display !== "none") {
+      return;
+    }
     const lineIdToken = liff.getIDToken();
     const profileResponse = await getMyProfile({ lineIdToken: lineIdToken });
     if (!profileResponse.data.success) {
