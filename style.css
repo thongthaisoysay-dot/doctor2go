@@ -506,3 +506,43 @@ select:focus {
 .logo--profile:active {
   transform: scale(0.92);
 }
+
+/*--------------LINE OA floating button--------------*/
+.fab-line {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #06c755;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  animation: fab-drop-in 0.8s ease-out forwards;
+}
+
+@keyframes fab-drop-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 100px);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -12px);
+  }
+  70% {
+    transform: translate(-50%, 6px);
+  }
+  85% {
+    transform: translate(-50%, -3px);
+  }
+  100% {
+    transform: translate(-50%, 0);
+  }
+}
