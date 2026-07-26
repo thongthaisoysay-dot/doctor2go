@@ -93,6 +93,25 @@ let userProfile = null;
 let confirmationResult = null;
 let corporateMode = null;
 let inviteToken = null;
+let previousStepId = null;
+
+const stepDisplayTypes = {
+  step1: "flex",
+  "step-invite": "block",
+  step2: "block",
+  step3: "block",
+  step4: "block",
+  "step-myprofile": "flex",
+};
+
+function findVisibleStepId() {
+  const candidateIds = ["step1", "step-invite", "step2", "step3", "step4"];
+  return (
+    candidateIds.find(
+      (id) => document.getElementById(id).style.display !== "none",
+    ) || null
+  );
+}
 
 function hideAllSteps() {
   document.getElementById("step1").style.display = "none";
@@ -356,8 +375,21 @@ document
       showAlert("Please finish registering first.");
       return;
     }
+    previousStepId = findVisibleStepId();
     hideAllSteps();
     showProfile(profileResponse.data.profile);
+    document.getElementById("btn-back-to-app").style.display = previousStepId
+      ? "block"
+      : "none";
+  });
+
+document
+  .getElementById("btn-back-to-app")
+  .addEventListener("click", function () {
+    if (!previousStepId) return;
+    hideAllSteps();
+    document.getElementById(previousStepId).style.display =
+      stepDisplayTypes[previousStepId];
   });
 
 let companySearchTimeout = null;
