@@ -501,7 +501,7 @@ exports.notifyDispatch = onCall(
 
     const targetLineUserId = request.data.targetLineUserId;
     const location = (request.data.location || "").trim();
-    const locationText = location ? ` (${location})` : "";
+    const destinationText = location || "your location";
 
     await fetch("https://api.line.me/v2/bot/message/push", {
       method: "POST",
@@ -514,7 +514,7 @@ exports.notifyDispatch = onCall(
         messages: [
           {
             type: "text",
-            text: `Thank you for using Doctor2Go. We are sending a doctor to your location${locationText}, arriving within 40 minutes. 🚑`,
+            text: `Thank you for using Doctor2Go. We are sending a doctor to ${destinationText}, arriving within 40 minutes. 🚑`,
           },
         ],
       }),
