@@ -41,6 +41,7 @@ const getMyProfile = httpsCallable(functions, "getMyProfile");
 const createInvite = httpsCallable(functions, "createInvite");
 const claimInvite = httpsCallable(functions, "claimInvite");
 const searchCompanies = httpsCallable(functions, "searchCompanies");
+const lookupMember = httpsCallable(functions, "lookupMember");
 
 const roleLabels = {
   admin: "Account Owner",
@@ -59,7 +60,12 @@ async function main() {
   const logoImg = document.getElementById("app-logo");
   logoImg.src = userProfile.pictureUrl;
   logoImg.classList.add("logo--profile");
-
+  const staff = new URLSearchParams(location.search);
+  const staffSearch = staff.get("staff");
+  if (staffSearch === "1") {
+    document.getElementById("step-staff-search").style.display = "block";
+    return;
+  }
   const lineIdToken = liff.getIDToken();
   const profileResponse = await getMyProfile({
     lineIdToken: lineIdToken,
@@ -449,6 +455,74 @@ document
       event.target.textContent;
     this.style.display = "none";
     this.innerHTML = "";
+  });
+
+let staffSearchTimeout = null;
+document
+  .getElementById("input-staff-query")
+  .addEventListener("input", function () {
+    clearTimeout(staffSearchTimeout);
+
+    const query = this.value;
+    const resultsBox = document.getElementById("staff-search-results");
+
+    if (query.trim().length === 0) {
+      resultsBox.innerHTML = "";
+      return;
+    }
+
+    staffSearchTimeout = setTimeout(async () => {
+      const lineIdToken = liff.getIDToken();
+      const response = await lookupMember({
+        query: query,
+        lineIdToken: lineIdToken,
+      });
+
+      resultsBox.innerHTML = "";
+
+      if (!response.data.success) {
+        showAlert("Search failed: " + response.data.reason);
+        return;
+      }
+
+      if (response.data.members.length === 0) {
+        const noResults = document.createElement("p");
+        noResults.textContent = "No member found.";
+        resultsBox.appendChild(noResults);
+        return;
+      }
+
+      response.data.members.forEach((member) => {
+        const card = document.createElement("div");
+        card.className = "staff-result-card";
+
+        const nameLine = document.createElement("p");
+        nameLine.textContent = "Name: " + member.name;
+        card.appendChild(nameLine);
+
+        const phoneLine = document.createElement("p");
+        phoneLine.textContent = "Phone: " + member.phone;
+        card.appendChild(phoneLine);
+
+        const codeLine = document.createElement("p");
+        codeLine.textContent = "Member Code: " + member.memberCode;
+        card.appendChild(codeLine);
+
+        const typeLine = document.createElement("p");
+        typeLine.textContent =
+          "Member Type: " +
+          (member.role === "member" ? "Household Member" : member.memberType);
+        card.appendChild(typeLine);
+
+        if (member.companyName) {
+          const companyLine = document.createElement("p");
+          companyLine.textContent = "Company: " + member.companyName;
+          card.appendChild(companyLine);
+        }
+
+        resultsBox.appendChild(card);
+      });
+    }, 100);
   });
 
 document

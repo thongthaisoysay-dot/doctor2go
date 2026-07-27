@@ -547,3 +547,18 @@ select:focus {
     transform: translate(-50%, 0);
   }
 }
+
+/* ---------- Staff member search ---------- */
+.staff-result-card {
+  background-color: var(--color-primary-soft);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.staff-result-card p {
+  margin: 4px 0;
+  color: var(--color-dark);
+  font-size: 14px;
+}
