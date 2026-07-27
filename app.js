@@ -42,6 +42,7 @@ const createInvite = httpsCallable(functions, "createInvite");
 const claimInvite = httpsCallable(functions, "claimInvite");
 const searchCompanies = httpsCallable(functions, "searchCompanies");
 const lookupMember = httpsCallable(functions, "lookupMember");
+const notifyDispatch = httpsCallable(functions, "notifyDispatch");
 
 const roleLabels = {
   admin: "Account Owner",
@@ -64,6 +65,8 @@ async function main() {
   const staffSearch = staff.get("staff");
   if (staffSearch === "1") {
     document.getElementById("step-staff-search").style.display = "block";
+    document.getElementById("status").style.display = "none";
+
     return;
   }
   const lineIdToken = liff.getIDToken();
@@ -519,6 +522,25 @@ document
           companyLine.textContent = "Company: " + member.companyName;
           card.appendChild(companyLine);
         }
+
+        const dispatchButton = document.createElement("button");
+        dispatchButton.textContent = "Notify Dispatch";
+        dispatchButton.addEventListener("click", async () => {
+          dispatchButton.disabled = true;
+          const lineIdToken = liff.getIDToken();
+          const dispatchResponse = await notifyDispatch({
+            targetLineUserId: member.lineUserId,
+            lineIdToken: lineIdToken,
+          });
+
+          if (dispatchResponse.data.success) {
+            showAlert("Notification sent to " + member.name + ".");
+          } else {
+            showAlert("Failed to send: " + dispatchResponse.data.reason);
+            dispatchButton.disabled = false;
+          }
+        });
+        card.appendChild(dispatchButton);
 
         resultsBox.appendChild(card);
       });
