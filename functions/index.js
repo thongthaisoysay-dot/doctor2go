@@ -16,6 +16,16 @@ const { defineSecret } = require("firebase-functions/params");
 const lineChannelAccessToken = defineSecret("LINE_CHANNEL_ACCESS_TOKEN");
 admin.initializeApp();
 
+const STAFF_LINE_USER_IDS = [
+  "Uaeedf1308c5a0fc6d332855290635e27",
+  "U200502c455ce0275f77850adf1b5f0c4",
+  "Uf9415bb3b7f36cd961c64ec14ce9fb64",
+];
+
+function normalizePhone(phoneNumber) {
+  return "+66" + phoneNumber.slice(1);
+}
+
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
 // traffic spikes by instead downgrading performance. This limit is a
@@ -281,10 +291,7 @@ exports.searchCompanies = onCall(async (request) => {
   }
 
   const db = admin.firestore();
-  const snapshot = await db
-    .collection("companies")
-    .select("companyName")
-    .get();
+  const snapshot = await db.collection("companies").select("companyName").get();
 
   const matches = snapshot.docs
     .map((doc) => doc.data().companyName)
@@ -301,18 +308,75 @@ exports.searchCompanies = onCall(async (request) => {
   return { success: true, companyNames: matches.slice(0, 8) };
 });
 
+exports.lookupMemberByPhone = onCall(async (request) => {
+  const lineIdToken = request.data.lineIdToken;
+  const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `id_token=${lineIdToken}&client_id=2010746451`,
+  });
+
+  if (!lineResponse.ok) {
+    return { success: false, reason: "invalid_line_token" };
+  }
+  const lineData = await lineResponse.json();
+  const lineUserId = lineData.sub;
+
+  if (!STAFF_LINE_USER_IDS.includes(lineUserId)) {
+    return { success: false, reason: "not_staff" };
+  }
+  const normalizedPhone = normalizePhone(request.data.phoneNumber);
+  const db = admin.firestore();
+
+  const memberQuery = await db
+    .collection("members")
+    .where("phone", "==", normalizedPhone)
+    .get();
+  if (memberQuery.empty) {
+    return { success: true, found: false };
+  }
+  const memberDoc = memberQuery.docs[0];
+  const memberData = memberDoc.data();
+  if (memberData.memberType !== "corporate") {
+    return {
+      success: true,
+      found: true,
+      member: {
+        name: memberData.name,
+        phone: memberData.phone,
+        memberType: memberData.memberType,
+        memberCode: memberData.memberCode,
+      },
+    };
+  }
+  const companyDoc = await db
+    .collection("companies")
+    .doc(memberData.companyId)
+    .get();
+  const companyData = companyDoc.data();
+  return {
+    success: true,
+    found: true,
+    member: {
+      name: memberData.name,
+      phone: memberData.phone,
+      memberCode: memberData.memberCode,
+      memberType: memberData.memberType,
+      companyName: companyData.companyName,
+      role: memberData.role,
+    },
+  };
+});
+
 exports.claimInvite = onCall(
   { secrets: [lineChannelAccessToken] },
   async (request) => {
     const lineIdToken = request.data.lineIdToken;
-    const lineResponse = await fetch(
-      "https://api.line.me/oauth2/v2.1/verify",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `id_token=${lineIdToken}&client_id=2010746451`,
-      },
-    );
+    const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `id_token=${lineIdToken}&client_id=2010746451`,
+    });
 
     const lineData = await lineResponse.json();
 
