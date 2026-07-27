@@ -308,7 +308,7 @@ exports.searchCompanies = onCall(async (request) => {
   return { success: true, companyNames: matches.slice(0, 8) };
 });
 
-exports.lookupMemberByPhone = onCall(async (request) => {
+exports.lookupMember = onCall(async (request) => {
   const lineIdToken = request.data.lineIdToken;
   const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
     method: "POST",
@@ -325,47 +325,61 @@ exports.lookupMemberByPhone = onCall(async (request) => {
   if (!STAFF_LINE_USER_IDS.includes(lineUserId)) {
     return { success: false, reason: "not_staff" };
   }
-  const normalizedPhone = normalizePhone(request.data.phoneNumber);
-  const db = admin.firestore();
 
-  const memberQuery = await db
-    .collection("members")
-    .where("phone", "==", normalizedPhone)
-    .get();
-  if (memberQuery.empty) {
-    return { success: true, found: false };
+  const query = (request.data.query || "").trim();
+  if (query.length === 0) {
+    return { success: true, members: [] };
   }
-  const memberDoc = memberQuery.docs[0];
-  const memberData = memberDoc.data();
-  if (memberData.memberType !== "corporate") {
-    return {
-      success: true,
-      found: true,
-      member: {
+
+  const db = admin.firestore();
+  const isPhoneSearch = /^\d+$/.test(query);
+
+  let matchedMemberDocs;
+
+  if (isPhoneSearch) {
+    const normalizedPhone = normalizePhone(query);
+    const memberQuery = await db
+      .collection("members")
+      .where("phone", "==", normalizedPhone)
+      .get();
+    matchedMemberDocs = memberQuery.docs;
+  } else {
+    const allMembersSnapshot = await db.collection("members").get();
+    matchedMemberDocs = allMembersSnapshot.docs.filter((doc) =>
+      doc.data().name.toLowerCase().includes(query.toLowerCase()),
+    );
+  }
+
+  // ส่วนนี้เตรียมไว้ให้ - ดึงข้อมูลบริษัททั้งหมดมาเก็บไว้ล่วงหน้า
+  // (แทนที่จะ query บริษัททีละคนทีละคน ซึ่งช้าและ query ซ้ำซ้อนถ้าเจอหลายคนบริษัทเดียวกัน)
+  const companiesSnapshot = await db.collection("companies").get();
+  const companiesById = {};
+  companiesSnapshot.docs.forEach((doc) => {
+    companiesById[doc.id] = doc.data();
+  });
+
+  const members = matchedMemberDocs.map((doc) => {
+    const memberData = doc.data();
+    if (memberData.memberType !== "corporate") {
+      return {
         name: memberData.name,
         phone: memberData.phone,
         memberType: memberData.memberType,
         memberCode: memberData.memberCode,
-      },
-    };
-  }
-  const companyDoc = await db
-    .collection("companies")
-    .doc(memberData.companyId)
-    .get();
-  const companyData = companyDoc.data();
-  return {
-    success: true,
-    found: true,
-    member: {
+      };
+    }
+    const companyData = companiesById[memberData.companyId];
+    return {
       name: memberData.name,
       phone: memberData.phone,
       memberCode: memberData.memberCode,
       memberType: memberData.memberType,
       companyName: companyData.companyName,
       role: memberData.role,
-    },
-  };
+    };
+  });
+
+  return { success: true, members: members };
 });
 
 exports.claimInvite = onCall(
