@@ -366,6 +366,7 @@ exports.lookupMember = onCall(async (request) => {
         phone: memberData.phone,
         memberType: memberData.memberType,
         memberCode: memberData.memberCode,
+        lineUserId: memberData.lineUserId,
       };
     }
     const companyData = companiesById[memberData.companyId];
@@ -376,6 +377,7 @@ exports.lookupMember = onCall(async (request) => {
       memberType: memberData.memberType,
       companyName: companyData.companyName,
       role: memberData.role,
+      lineUserId: memberData.lineUserId,
     };
   });
 
@@ -476,5 +478,48 @@ exports.claimInvite = onCall(
     });
 
     return { success: true, memberCode: memberCode };
+  },
+);
+
+exports.notifyDispatch = onCall(
+  { secrets: [lineChannelAccessToken] },
+  async (request) => {
+    const lineIdToken = request.data.lineIdToken;
+    const lineResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `id_token=${lineIdToken}&client_id=2010746451`,
+    });
+    if (!lineResponse.ok) {
+      return { success: false, reason: "invalid_line_token" };
+    }
+    const lineData = await lineResponse.json();
+    const lineUserId = lineData.sub;
+    if (!STAFF_LINE_USER_IDS.includes(lineUserId)) {
+      return { success: false, reason: "not_staff" };
+    }
+
+    const targetLineUserId = request.data.targetLineUserId;
+    const location = (request.data.location || "").trim();
+    const locationText = location ? ` (${location})` : "";
+
+    await fetch("https://api.line.me/v2/bot/message/push", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${lineChannelAccessToken.value()}`,
+      },
+      body: JSON.stringify({
+        to: targetLineUserId,
+        messages: [
+          {
+            type: "text",
+            text: `Thank you for using Doctor2Go. We are sending a doctor to your location${locationText}, arriving within 40 minutes. 🚑`,
+          },
+        ],
+      }),
+    });
+
+    return { success: true };
   },
 );

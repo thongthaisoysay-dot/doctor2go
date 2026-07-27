@@ -523,6 +523,11 @@ document
           card.appendChild(companyLine);
         }
 
+        const locationInput = document.createElement("input");
+        locationInput.type = "text";
+        locationInput.placeholder = "Location (optional)";
+        card.appendChild(locationInput);
+
         const dispatchButton = document.createElement("button");
         dispatchButton.textContent = "Notify Dispatch";
         dispatchButton.addEventListener("click", async () => {
@@ -530,6 +535,7 @@ document
           const lineIdToken = liff.getIDToken();
           const dispatchResponse = await notifyDispatch({
             targetLineUserId: member.lineUserId,
+            location: locationInput.value,
             lineIdToken: lineIdToken,
           });
 

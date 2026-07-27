@@ -563,6 +563,16 @@ select:focus {
   font-size: 14px;
 }
 
+.staff-result-card input[type="text"] {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: inherit;
+}
+
 .staff-result-card button {
   width: 100%;
   margin-top: 10px;
