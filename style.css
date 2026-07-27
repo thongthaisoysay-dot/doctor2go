@@ -562,3 +562,27 @@ select:focus {
   color: var(--color-dark);
   font-size: 14px;
 }
+
+.staff-result-card button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.staff-result-card button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.staff-result-card button:disabled {
+  background-color: var(--color-text-muted);
+  cursor: not-allowed;
+}
