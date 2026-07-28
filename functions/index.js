@@ -503,7 +503,7 @@ exports.notifyDispatch = onCall(
     const location = (request.data.location || "").trim();
     const destinationText = location || "your location";
 
-    await fetch("https://api.line.me/v2/bot/message/push", {
+    const pushResponse = await fetch("https://api.line.me/v2/bot/message/push", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -519,6 +519,12 @@ exports.notifyDispatch = onCall(
         ],
       }),
     });
+
+    if (!pushResponse.ok) {
+      const pushError = await pushResponse.text();
+      logger.error("notifyDispatch push failed", pushError);
+      return { success: false, reason: "push_failed", pushError: pushError };
+    }
 
     return { success: true };
   },

@@ -543,7 +543,12 @@ document
             if (dispatchResponse.data.success) {
               showAlert("Notification sent to " + member.name + ".");
             } else {
-              showAlert("Failed to send: " + dispatchResponse.data.reason);
+              showAlert(
+                "Failed to send: " +
+                  dispatchResponse.data.reason +
+                  " " +
+                  (dispatchResponse.data.pushError || ""),
+              );
               dispatchButton.disabled = false;
             }
           } catch (error) {
