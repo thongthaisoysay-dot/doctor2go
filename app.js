@@ -532,17 +532,23 @@ document
         dispatchButton.textContent = "Notify Dispatch";
         dispatchButton.addEventListener("click", async () => {
           dispatchButton.disabled = true;
-          const lineIdToken = liff.getIDToken();
-          const dispatchResponse = await notifyDispatch({
-            targetLineUserId: member.lineUserId,
-            location: locationInput.value,
-            lineIdToken: lineIdToken,
-          });
+          try {
+            const lineIdToken = liff.getIDToken();
+            const dispatchResponse = await notifyDispatch({
+              targetLineUserId: member.lineUserId,
+              location: locationInput.value,
+              lineIdToken: lineIdToken,
+            });
 
-          if (dispatchResponse.data.success) {
-            showAlert("Notification sent to " + member.name + ".");
-          } else {
-            showAlert("Failed to send: " + dispatchResponse.data.reason);
+            if (dispatchResponse.data.success) {
+              showAlert("Notification sent to " + member.name + ".");
+            } else {
+              showAlert("Failed to send: " + dispatchResponse.data.reason);
+              dispatchButton.disabled = false;
+            }
+          } catch (error) {
+            console.log(error);
+            showAlert("Failed to send. Please try again.");
             dispatchButton.disabled = false;
           }
         });
