@@ -177,10 +177,10 @@ h1 {
   width: 100%;
   margin-top: 16px;
   padding: 12px 20px;
-  border: 1.5px solid var(--color-border);
+  border: none;
   border-radius: var(--radius);
-  background-color: var(--color-card);
-  color: var(--color-text-muted);
+  background-color: var(--color-primary);
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
   font-family: inherit;
@@ -188,7 +188,7 @@ h1 {
 }
 
 #btn-back-to-app:hover {
-  background-color: var(--color-bg);
+  background-color: var(--color-primary-dark);
 }
 
 #btn-search-member {
