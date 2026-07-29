@@ -411,7 +411,7 @@ document
       showAlert("Please finish registering first.");
       return;
     }
-    previousStepId = findVisibleStepId();
+    previousStepId = "step4";
     hideAllSteps();
     showProfile(profileResponse.data.profile);
     document.getElementById("btn-back-to-app").style.display = previousStepId
