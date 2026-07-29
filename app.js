@@ -34,6 +34,11 @@ const completeRegistration = httpsCallable(functions, "completeRegistration");
 
 //เอาไว้เก็บรหัสประจำตัวของ Liff App
 const LIFF_ID = "2010746451-zVL3e0wH";
+const ADMIN_LINE_USER_TDS = [
+  "Uaeedf1308c5a0fc6d332855290635e27",
+  "U200502c455ce0275f77850adf1b5f0c4",
+  "Uf9415bb3b7f36cd961c64ec14ce9fb64",
+];
 
 const DOCTOR2GO_PHONE = "0856630663";
 
@@ -58,6 +63,9 @@ async function main() {
   }
 
   userProfile = await liff.getProfile();
+  if (ADMIN_LINE_USER_TDS.includes(userProfile.userId)) {
+    document.getElementById("btn-search-member").style.display = "block";
+  }
   const logoImg = document.getElementById("app-logo");
   logoImg.src = userProfile.pictureUrl;
   logoImg.classList.add("logo--profile");
@@ -135,6 +143,7 @@ function hideAllSteps() {
   document.getElementById("step3").style.display = "none";
   document.getElementById("step4").style.display = "none";
   document.getElementById("step-myprofile").style.display = "none";
+  document.getElementById("step-staff-search").style.display = "none";
 }
 
 function showProfile(profileData) {
@@ -400,6 +409,15 @@ document
     document.getElementById("btn-back-to-app").style.display = previousStepId
       ? "block"
       : "none";
+  });
+
+document
+  .getElementById("btn-search-member")
+  .addEventListener("click", function () {
+    previousStepId = findVisibleStepId();
+    hideAllSteps();
+    document.getElementById("step-staff-search").style.display = "block";
+    document.getElementById("btn-back-to-app").style.display = "block";
   });
 
 document
