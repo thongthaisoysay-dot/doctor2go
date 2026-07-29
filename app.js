@@ -125,10 +125,18 @@ const stepDisplayTypes = {
   step3: "block",
   step4: "block",
   "step-myprofile": "flex",
+  "step-staff-search": "block",
 };
 
 function findVisibleStepId() {
-  const candidateIds = ["step1", "step-invite", "step2", "step3", "step4"];
+  const candidateIds = [
+    "step1",
+    "step-invite",
+    "step2",
+    "step3",
+    "step4",
+    "step-staff-search",
+  ];
   return (
     candidateIds.find(
       (id) => document.getElementById(id).style.display !== "none",
