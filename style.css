@@ -209,6 +209,10 @@ h1 {
   background-color: var(--color-border);
 }
 
+#step-staff-search {
+  text-align: center;
+}
+
 /* ---------- Form fields ---------- */
 
 input[type="text"],
